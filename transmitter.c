@@ -6,6 +6,7 @@
 #include <sys/stat.h>
 #include <termios.h>
 #include <unistd.h>
+#include <signal.h>
 
 // Baudrate settings are defined in <asm/termbits.h>, which is
 // included by <termios.h>
@@ -16,6 +17,14 @@
 #define ADDRESS 0x03
 #define SET_CONTROL 0x03
 #define UA_CONTROL 0x07
+
+int alarm_enabled = 0;
+int alarm_count = 0;
+
+void alarm_handler(int signal) {
+    alarm_enabled = 0;
+    alarm_count++;
+}
 
 char* assemble_supervision_frame() {
     char* set_frame = malloc(SUP_FRAME_SIZE);
@@ -75,10 +84,27 @@ int main(int argc, char *argv[]) {
         exit(-1);
     }
     printf("New termios structure set\n");
+    
+    (void) signal(SIGALRM, alarm_handler);
+    printf("New alarm handler set\n");
 
     char* set_frame = assemble_supervision_frame();
-    write(fd, set_frame, SUP_FRAME_SIZE);
-    printf("Supervision frame sent\n");
+    char ua_frame[SUP_FRAME_SIZE];
 
-    return 0;
+    while (alarm_count < 3) {
+        if (!alarm_enabled) {
+            write(fd, set_frame, SUP_FRAME_SIZE);
+            printf("Supervision frame sent\n");
+            alarm(3);
+            alarm_enabled = 1;
+        }
+        if (read(fd, ua_frame, SUP_FRAME_SIZE)) {
+            for (int i = 0; i < SUP_FRAME_SIZE; i++)
+                printf("%08x\n", ua_frame[i]);
+            printf("Acknowledgement frame read\n");
+            return 0;
+        }
+    }
+    printf("Transmission failed\n");
+    return 1;
 }
