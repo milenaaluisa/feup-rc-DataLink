@@ -11,13 +11,15 @@
 // included by <termios.h>
 #define BAUDRATE B38400
 
-
+#define BYTE_SIZE 1
 #define SUP_FRAME_SIZE 5
 #define FLAG 0x7E
 #define ADDRESS 0x03
 #define SET_CONTROL 0x03
 #define UA_CONTROL 0x07
 
+enum State {START, FLAG_RCV, A_RCV, C_RCV, BCC_OK, STOP};
+enum State state = START;
 
 /*typedef struct supervision_frame {
     char start_flag;
@@ -26,6 +28,43 @@
     char block_check;
     char end_flag;
 };*/
+
+void start_transition_check(char byte_rcv) {
+    if (byte_rcv == FLAG)
+        state = FLAG_RCV;
+}
+
+void flag_rcv_transition_check(char byte_rcv) {
+    if (byte_rcv == ADDRESS)
+        state = A_RCV;
+    else if (byte_rcv != FLAG)
+        state = START;
+}
+
+void a_rcv_transition_check(char byte_rcv) {
+    if (byte_rcv == SET_CONTROL)
+        state = C_RCV;
+    else if (byte_rcv == FLAG)
+        state = FLAG_RCV;
+    else
+        state = START;
+}
+
+void c_rcv_transition_check(char byte_rcv) {
+    if (byte_rcv == (ADDRESS ^ SET_CONTROL))
+        state = BCC_OK;
+    else if (byte_rcv == FLAG)
+        state = FLAG_RCV;
+    else
+        state = START;
+}
+
+void bcc_ok_transition_check(char byte_rcv) {
+    if (byte_rcv == FLAG)
+        state = STOP;
+    else
+        state = START;
+}
 
 int main(int argc, char *argv[]) {
     const char *serialPortName = argv[1];
@@ -75,15 +114,25 @@ int main(int argc, char *argv[]) {
     }
     printf("New termios structure set\n");
 
-    char set_frame[SUP_FRAME_SIZE];
-    while(1){
-       if (read(fd, set_frame, SUP_FRAME_SIZE)) 
-        break;
+    char byte_rcv[BYTE_SIZE];
+    while (state != STOP) {
+        read(fd, byte_rcv, BYTE_SIZE);
+        printf("%08x\n", byte_rcv[0]);
+
+        switch (state) {
+        case START:
+            start_transition_check(byte_rcv[0]); break;
+        case FLAG_RCV:
+            flag_rcv_transition_check(byte_rcv[0]); break;
+        case A_RCV:
+            a_rcv_transition_check(byte_rcv[0]); break;
+        case C_RCV:
+            c_rcv_transition_check(byte_rcv[0]); break;
+        case BCC_OK:
+            bcc_ok_transition_check(byte_rcv[0]); break;
+        }
     }
     
-
     printf("Supervision frame read\n");
-    for (int i = 0; i < SUP_FRAME_SIZE; i++)
-        printf("%08x\n", set_frame[i]);
     return 0;
 }
