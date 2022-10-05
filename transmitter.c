@@ -17,15 +17,6 @@
 #define SET_CONTROL 0x03
 #define UA_CONTROL 0x07
 
-/*
-typedef struct supervision_frame {
-    char start_flag;
-    char address;
-    char control;
-    char block_check;
-    char end_flag;
-};*/
-
 char* assemble_supervision_frame() {
     char* set_frame = malloc(SUP_FRAME_SIZE);
     set_frame[0] = FLAG;

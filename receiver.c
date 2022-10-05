@@ -21,14 +21,6 @@
 enum State {START, FLAG_RCV, A_RCV, C_RCV, BCC_OK, STOP};
 enum State state = START;
 
-/*typedef struct supervision_frame {
-    char start_flag;
-    char address;
-    char control;
-    char block_check;
-    char end_flag;
-};*/
-
 void start_transition_check(char byte_rcv) {
     if (byte_rcv == FLAG)
         state = FLAG_RCV;
