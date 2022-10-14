@@ -16,6 +16,7 @@
 #define FLAG 0x7E
 #define ADDRESS 0x03
 #define SET_CONTROL 0x03
+#define DISC_CONTROL 0x0B
 #define UA_CONTROL 0x07
 
 int alarm_enabled = 0;
@@ -35,6 +36,44 @@ char* assemble_supervision_frame() {
     set_frame[4] = FLAG;
 
     return set_frame;
+}
+
+int stop_transmission (int fd) {
+    char* disc_frame = malloc(SUP_FRAME_SIZE);
+    char* ua_frame = malloc(SUP_FRAME_SIZE);
+    char* disc_frame_rcv = malloc(SUP_FRAME_SIZE);
+
+    disc_frame[0] = FLAG;
+    disc_frame[1] = ADDRESS;
+    disc_frame[2] = DISC_CONTROL;
+    disc_frame[3] = ADDRESS ^ SET_CONTROL;
+    disc_frame[4] = FLAG;
+
+    ua_frame[0] = FLAG;
+    ua_frame[1] = ADDRESS;
+    ua_frame[2] = UA_CONTROL;
+    ua_frame[3] = ADDRESS ^ SET_CONTROL;
+    ua_frame[4] = FLAG;
+
+
+    while (alarm_count < 3) {
+        if (!alarm_enabled) {
+            write(fd, disc_frame, SUP_FRAME_SIZE);
+            printf("Disconnection frame sent\n");
+            alarm(3);
+            alarm_enabled = 1;
+        }
+        if (read(fd, disc_frame_rcv, SUP_FRAME_SIZE)) {
+            for (int i = 0; i < SUP_FRAME_SIZE; i++)
+                printf("%08x\n", disc_frame_rcv[i]);
+            printf("Disconnection frame read\n");
+
+            write(fd, ua_frame, SUP_FRAME_SIZE);
+            printf("Acknowledgement frame sent\n");
+            return 0;
+        }
+    }
+    return 1;
 }
 
 int main(int argc, char *argv[]) {

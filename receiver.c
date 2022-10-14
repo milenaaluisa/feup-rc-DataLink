@@ -16,10 +16,13 @@
 #define FLAG 0x7E
 #define ADDRESS 0x03
 #define SET_CONTROL 0x03
+#define DISC_CONTROL 0x0B
 #define UA_CONTROL 0x07
 
 enum State {START, FLAG_RCV, A_RCV, C_RCV, BCC_OK, STOP};
 enum State state = START;
+
+char control_rcv[BYTE_SIZE];
 
 void start_transition_check(char byte_rcv) {
     if (byte_rcv == FLAG)
@@ -34,8 +37,10 @@ void flag_rcv_transition_check(char byte_rcv) {
 }
 
 void a_rcv_transition_check(char byte_rcv) {
-    if (byte_rcv == SET_CONTROL)
+    if (byte_rcv == SET_CONTROL || byte_rcv == DISC_CONTROL){
         state = C_RCV;
+        control_rcv[0] = byte_rcv;
+    }
     else if (byte_rcv == FLAG)
         state = FLAG_RCV;
     else
@@ -56,6 +61,29 @@ void bcc_ok_transition_check(char byte_rcv) {
         state = STOP;
     else
         state = START;
+}
+
+int send_back_disc_frame(int fd) {
+    char* disc_frame = malloc(SUP_FRAME_SIZE);
+    char* ua_frame_rcv = malloc(SUP_FRAME_SIZE);
+
+    disc_frame[0] = FLAG;
+    disc_frame[1] = ADDRESS;
+    disc_frame[2] = DISC_CONTROL;
+    disc_frame[3] = ADDRESS ^ SET_CONTROL;
+    disc_frame[4] = FLAG;
+
+    write(fd, disc_frame, SUP_FRAME_SIZE);
+    printf("Disconnection frame sent\n");
+
+    if (read(fd, ua_frame_rcv, SUP_FRAME_SIZE)) {
+        for (int i = 0; i < SUP_FRAME_SIZE; i++)
+            printf("%08x\n", ua_frame_rcv[i]);
+        printf("Acknowledgement frame read\n");
+        return 0;
+    }
+
+    return 1;
 }
 
 int main(int argc, char *argv[]) {
@@ -126,5 +154,13 @@ int main(int argc, char *argv[]) {
     }
     
     printf("Supervision frame read\n");
+
+    /*
+    if (control_rcv[0] == DISC_CONTROL){
+        if (send_back_disc_frame(fd) != 0) 
+            printf("Disconnection failed. \n");
+            return 1;
+    }*/
+        
     return 0;
 }
