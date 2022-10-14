@@ -70,7 +70,7 @@ int send_back_disc_frame(int fd) {
     disc_frame[0] = FLAG;
     disc_frame[1] = ADDRESS;
     disc_frame[2] = DISC_CONTROL;
-    disc_frame[3] = ADDRESS ^ SET_CONTROL;
+    disc_frame[3] = ADDRESS ^ DISC_CONTROL;
     disc_frame[4] = FLAG;
 
     write(fd, disc_frame, SUP_FRAME_SIZE);

@@ -27,34 +27,21 @@ void alarm_handler(int signal) {
     alarm_count++;
 }
 
-char* assemble_supervision_frame() {
-    char* set_frame = malloc(SUP_FRAME_SIZE);
-    set_frame[0] = FLAG;
-    set_frame[1] = ADDRESS;
-    set_frame[2] = SET_CONTROL;
-    set_frame[3] = ADDRESS ^ SET_CONTROL;
-    set_frame[4] = FLAG;
+char* assemble_supervision_frame(char control_field) {
+    char* sup_frame = malloc(SUP_FRAME_SIZE);
+    sup_frame[0] = FLAG;
+    sup_frame[1] = ADDRESS;
+    sup_frame[2] = control_field;
+    sup_frame[3] = ADDRESS ^ control_field;
+    sup_frame[4] = FLAG;
 
-    return set_frame;
+    return sup_frame;
 }
 
 int stop_transmission (int fd) {
-    char* disc_frame = malloc(SUP_FRAME_SIZE);
-    char* ua_frame = malloc(SUP_FRAME_SIZE);
+    char* disc_frame = assemble_supervision_frame(DISC_CONTROL);
+    char* ua_frame = assemble_supervision_frame(UA_CONTROL);
     char* disc_frame_rcv = malloc(SUP_FRAME_SIZE);
-
-    disc_frame[0] = FLAG;
-    disc_frame[1] = ADDRESS;
-    disc_frame[2] = DISC_CONTROL;
-    disc_frame[3] = ADDRESS ^ SET_CONTROL;
-    disc_frame[4] = FLAG;
-
-    ua_frame[0] = FLAG;
-    ua_frame[1] = ADDRESS;
-    ua_frame[2] = UA_CONTROL;
-    ua_frame[3] = ADDRESS ^ SET_CONTROL;
-    ua_frame[4] = FLAG;
-
 
     while (alarm_count < 3) {
         if (!alarm_enabled) {
@@ -127,7 +114,7 @@ int main(int argc, char *argv[]) {
     (void) signal(SIGALRM, alarm_handler);
     printf("New alarm handler set\n");
 
-    char* set_frame = assemble_supervision_frame();
+    char* set_frame = assemble_supervision_frame(SET_CONTROL);
     char ua_frame[SUP_FRAME_SIZE];
 
     while (alarm_count < 3) {
