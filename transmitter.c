@@ -9,6 +9,7 @@
 #include <signal.h>
 
 #include "data-link.h"
+#include "utils.h"
 
 int alarm_enabled = 0;
 int alarm_count = 0;
@@ -16,17 +17,6 @@ int alarm_count = 0;
 void alarm_handler(int signal) {
     alarm_enabled = 0;
     alarm_count++;
-}
-
-char* assemble_supervision_frame(char control_field) {
-    char* sup_frame = malloc(SUP_FRAME_SIZE);
-    sup_frame[0] = FLAG;
-    sup_frame[1] = ADDRESS;
-    sup_frame[2] = control_field;
-    sup_frame[3] = ADDRESS ^ control_field;
-    sup_frame[4] = FLAG;
-
-    return sup_frame;
 }
 
 char* stuffing(char* data) {

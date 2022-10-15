@@ -8,6 +8,7 @@
 #include <unistd.h>
 
 #include "data-link.h"
+#include "utils.h"
 
 enum State {START, FLAG_RCV, A_RCV, C_RCV, BCC_OK, STOP};
 enum State state = START;
@@ -51,17 +52,6 @@ void bcc_ok_transition_check(char byte_rcv) {
         state = STOP;
     else
         state = START;
-}
-
-char* assemble_supervision_frame(char control_field) {
-    char* sup_frame = malloc(SUP_FRAME_SIZE);
-    sup_frame[0] = FLAG;
-    sup_frame[1] = ADDRESS;
-    sup_frame[2] = control_field;
-    sup_frame[3] = ADDRESS ^ control_field;
-    sup_frame[4] = FLAG;
-
-    return sup_frame;
 }
 
 int send_back_disc_frame(int fd) {
