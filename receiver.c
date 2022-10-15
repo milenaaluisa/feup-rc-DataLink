@@ -149,6 +149,10 @@ int main(int argc, char *argv[]) {
     
     printf("Supervision frame read\n");
 
+    char* ua_frame[SUP_FRAME_SIZE];
+    write(fd, ua_frame, SUP_FRAME_SIZE);
+    printf("Acknowledgement frame sent\n");
+
     /*
     if (control_rcv[0] == DISC_CONTROL){
         if (send_back_disc_frame(fd) != 0) 
