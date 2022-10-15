@@ -29,25 +29,26 @@ char* assemble_supervision_frame(char control_field) {
     return sup_frame;
 }
 
-int stuffing(char* data, char* stuffed_data) {
+char* stuffing(char* data) {
     int stuffed_data_size = 0;
+    char* stuffed_data = (char*) malloc(DATA_FIELD_SIZE);
     char* stuffed_data_ptr = stuffed_data;
 
-    for (int i = 0; i < DATA_FIELD_SIZE; i++) {
+    while (stuffed_data_size < DATA_FIELD_SIZE) {
         if (*data == FLAG || *data == ESCAPE) {
-            *stuffed_data = ESCAPE;
-            stuffed_data++;
+            *stuffed_data_ptr = ESCAPE;
+            stuffed_data_ptr++;
             stuffed_data_size++;
-            *stuffed_data = *data ^ STF_XOR;
+            *stuffed_data_ptr = *data ^ STF_XOR;
         }
         else
-            *stuffed_data = *data;
+            *stuffed_data_ptr = *data;
 
         data++;
-        stuffed_data++;
+        stuffed_data_ptr++;
         stuffed_data_size++;
     }
-    return stuffed_data_size;
+    return stuffed_data;
 }
 
 int stop_transmission(int fd) {
@@ -138,10 +139,8 @@ int main(int argc, char *argv[]) {
 
             /* testing stuffing
             char* data = (char*) malloc(DATA_FIELD_SIZE);
-            char* stuffed_data = (char*) malloc(DATA_FIELD_SIZE*2);
-            data = "Hello world}~ooooooo"; // } is 0x7d, ~ is 0x7e, becomes: }] and }^
-            printf("%d\n", stuffing(data, stuffed_data));
-            printf("%s\n", stuffed_data);*/
+            data = "Hello world}~ooooo"; // } is 0x7d, ~ is 0x7e, becomes: }] and }^
+            printf("%s\n", stuffing(data)); */
 
         }
         if (read(fd, ua_frame, SUP_FRAME_SIZE)) {
