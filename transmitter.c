@@ -8,16 +8,7 @@
 #include <unistd.h>
 #include <signal.h>
 
-// Baudrate settings are defined in <asm/termbits.h>, which is
-// included by <termios.h>
-#define BAUDRATE B38400
-
-#define SUP_FRAME_SIZE 5
-#define FLAG 0x7E
-#define ADDRESS 0x03
-#define SET_CONTROL 0x03
-#define DISC_CONTROL 0x0B
-#define UA_CONTROL 0x07
+#include "data-link.h"
 
 int alarm_enabled = 0;
 int alarm_count = 0;
@@ -38,7 +29,7 @@ char* assemble_supervision_frame(char control_field) {
     return sup_frame;
 }
 
-int stop_transmission (int fd) {
+int stop_transmission(int fd) {
     char* disc_frame = assemble_supervision_frame(DISC_CONTROL);
     char* ua_frame = assemble_supervision_frame(UA_CONTROL);
     char* disc_frame_rcv = malloc(SUP_FRAME_SIZE);
