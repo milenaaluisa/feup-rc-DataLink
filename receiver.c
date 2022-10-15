@@ -53,15 +53,20 @@ void bcc_ok_transition_check(char byte_rcv) {
         state = START;
 }
 
-int send_back_disc_frame(int fd) {
-    char* disc_frame = malloc(SUP_FRAME_SIZE);
-    char* ua_frame_rcv = malloc(SUP_FRAME_SIZE);
+char* assemble_supervision_frame(char control_field) {
+    char* sup_frame = malloc(SUP_FRAME_SIZE);
+    sup_frame[0] = FLAG;
+    sup_frame[1] = ADDRESS;
+    sup_frame[2] = control_field;
+    sup_frame[3] = ADDRESS ^ control_field;
+    sup_frame[4] = FLAG;
 
-    disc_frame[0] = FLAG;
-    disc_frame[1] = ADDRESS;
-    disc_frame[2] = DISC_CONTROL;
-    disc_frame[3] = ADDRESS ^ DISC_CONTROL;
-    disc_frame[4] = FLAG;
+    return sup_frame;
+}
+
+int send_back_disc_frame(int fd) {
+    char* disc_frame = assemble_supervision_frame(DISC_CONTROL);
+    char* ua_frame_rcv = malloc(SUP_FRAME_SIZE);
 
     write(fd, disc_frame, SUP_FRAME_SIZE);
     printf("Disconnection frame sent\n");
@@ -72,7 +77,6 @@ int send_back_disc_frame(int fd) {
         printf("Acknowledgement frame read\n");
         return 0;
     }
-
     return 1;
 }
 
