@@ -80,6 +80,25 @@ int send_back_disc_frame(int fd) {
     return 1;
 }
 
+int receive_inf_frame(int fd) {
+    int is_escaped = 0;
+    char byte_rcv[BYTE_SIZE];
+
+    for (int i = 0; i < DATA_FIELD_SIZE; i++) {
+        read(fd, byte_rcv, BYTE_SIZE);
+        if (is_escaped) {
+            printf("%c", *byte_rcv ^ STF_XOR);
+            is_escaped = 0;
+        }
+        else if (*byte_rcv == ESCAPE)
+            is_escaped = 1;
+        else
+            printf("%c", *byte_rcv);
+    }
+    printf("\n");
+    return 0;
+}
+
 int main(int argc, char *argv[]) {
     const char *serialPortName = argv[1];
     if (argc < 2) {
@@ -148,6 +167,9 @@ int main(int argc, char *argv[]) {
     }
     
     printf("Supervision frame read\n");
+
+    receive_inf_frame(fd);
+    printf("Information frame received\n");
 
     char* ua_frame[SUP_FRAME_SIZE];
     write(fd, ua_frame, SUP_FRAME_SIZE);

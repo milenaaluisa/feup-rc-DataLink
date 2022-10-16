@@ -137,11 +137,14 @@ int main(int argc, char *argv[]) {
             alarm(3);
             alarm_enabled = 1;
 
-            /* testing stuffing
+            /* testing stuffing */
             char* data = (char*) malloc(DATA_FIELD_SIZE);
-            data = "Hello world}~ooooo"; // } is 0x7d, ~ is 0x7e, becomes: }] and }^
-            printf("%s\n", stuffing(data)); */
-
+            char* stuffed_data = (char*) malloc(DATA_FIELD_SIZE);
+            data = "Helloooooo world}~"; // } is 0x7d, ~ is 0x7e, becomes: }] and }^
+            stuffed_data = stuffing(data);
+            printf("%s\n", stuffed_data);
+            write(fd, stuffed_data, DATA_FIELD_SIZE);
+            printf("Information frame sent\n");
         }
         if (read(fd, ua_frame, SUP_FRAME_SIZE)) {
             for (int i = 0; i < SUP_FRAME_SIZE; i++)
