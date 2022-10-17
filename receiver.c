@@ -161,7 +161,7 @@ int main(int argc, char *argv[]) {
     receive_inf_frame(fd);
     printf("Information frame received\n");
 
-    char* ua_frame[SUP_FRAME_SIZE];
+    char* ua_frame = assemble_supervision_frame(UA_CONTROL);
     write(fd, ua_frame, SUP_FRAME_SIZE);
     printf("Acknowledgement frame sent\n");
 
