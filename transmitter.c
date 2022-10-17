@@ -66,6 +66,51 @@ int stop_transmission(int fd) {
     return 1;
 }
 
+int  while_not_stop_alarm(int fd, char *set_frame){
+    write(fd, set_frame, SUP_FRAME_SIZE);
+    printf("Supervision frame sent\n");
+    alarm(3);
+    alarm_enabled = 1;
+    /* testing stuffing */
+    char* data = (char*) malloc(DATA_FIELD_SIZE);
+    char* stuffed_data = (char*) malloc(DATA_FIELD_SIZE);
+    data = "Helloooooo world}~"; // } is 0x7d, ~ is 0x7e, becomes: }] and }^
+    stuffed_data = stuffing(data);
+    printf("%s\n", stuffed_data);
+    write(fd, stuffed_data, DATA_FIELD_SIZE);
+    printf("Information frame sent\n");
+
+    return 0;
+
+}
+
+
+
+
+int alarm_helper(int fd){
+    (void) signal(SIGALRM, alarm_handler);
+    printf("New alarm handler set\n");
+
+    char* set_frame = assemble_supervision_frame(SET_CONTROL);
+    char ua_frame[SUP_FRAME_SIZE];
+
+    while (alarm_count < 3) {
+        if (!alarm_enabled) {
+            if (while_not_stop_alarm(fd, set_frame)) return 1;
+        }
+        if (read(fd, ua_frame, SUP_FRAME_SIZE)) {
+            for (int i = 0; i < SUP_FRAME_SIZE; i++)
+                printf("%08x\n", ua_frame[i]);
+            printf("Acknowledgement frame read\n");
+            return 0;
+        }
+    }
+    printf("Transmission failed\n");
+    return 1;
+}
+
+
+
 int main(int argc, char *argv[]) {
     const char *serialPortName = argv[1];
     if (argc < 2) {
@@ -79,39 +124,11 @@ int main(int argc, char *argv[]) {
 
     // Open serial port device for reading and writing
     int fd = open(serialPortName, O_RDWR | O_NOCTTY);
-    
+
     if (create_termios_structure(fd, serialPortName)) return 1;
     printf("New termios structure set\n");
-    
-    (void) signal(SIGALRM, alarm_handler);
-    printf("New alarm handler set\n");
 
-    char* set_frame = assemble_supervision_frame(SET_CONTROL);
-    char ua_frame[SUP_FRAME_SIZE];
+    if (alarm_helper(fd)) return 1;
 
-    while (alarm_count < 3) {
-        if (!alarm_enabled) {
-            write(fd, set_frame, SUP_FRAME_SIZE);
-            printf("Supervision frame sent\n");
-            alarm(3);
-            alarm_enabled = 1;
-
-            /* testing stuffing */
-            char* data = (char*) malloc(DATA_FIELD_SIZE);
-            char* stuffed_data = (char*) malloc(DATA_FIELD_SIZE);
-            data = "Helloooooo world}~"; // } is 0x7d, ~ is 0x7e, becomes: }] and }^
-            stuffed_data = stuffing(data);
-            printf("%s\n", stuffed_data);
-            write(fd, stuffed_data, DATA_FIELD_SIZE);
-            printf("Information frame sent\n");
-        }
-        if (read(fd, ua_frame, SUP_FRAME_SIZE)) {
-            for (int i = 0; i < SUP_FRAME_SIZE; i++)
-                printf("%08x\n", ua_frame[i]);
-            printf("Acknowledgement frame read\n");
-            return 0;
-        }
-    }
-    printf("Transmission failed\n");
     return 1;
 }
