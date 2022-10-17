@@ -89,23 +89,7 @@ int receive_inf_frame(int fd) {
     return 0;
 }
 
-int main(int argc, char *argv[]) {
-    const char *serialPortName = argv[1];
-    if (argc < 2) {
-        printf("Incorrect program usage\n"
-               "Usage: %s <SerialPort>\n"
-               "Example: %s /dev/ttyS1\n",
-               argv[0],
-               argv[0]);
-        exit(1);
-    }
-
-    // Open serial port device for reading and writing
-    int fd = open(serialPortName, O_RDWR | O_NOCTTY);
-    
-    if (create_termios_structure(fd, serialPortName)) return 1;
-    printf("New termios structure set\n");
-
+int state_machine (int fd){
     char byte_rcv[BYTE_SIZE];
     while (state != STOP) {
         read(fd, byte_rcv, BYTE_SIZE);
@@ -124,22 +108,45 @@ int main(int argc, char *argv[]) {
             bcc_ok_transition_check(byte_rcv[0]); break;
         }
     }
-    
-    printf("Supervision frame read\n");
+}
 
+
+
+int main(int argc, char *argv[]) {
+    const char *serialPortName = argv[1];
+    if (argc < 2) {
+        printf("Incorrect program usage\n"
+               "Usage: %s <SerialPort>\n"
+               "Example: %s /dev/ttyS1\n",
+               argv[0],
+               argv[0]);
+        exit(1);
+    }
+
+    // Open serial port device for reading and writing
+    int fd = open(serialPortName, O_RDWR | O_NOCTTY);
+
+    if (create_termios_structure(fd, serialPortName)) return 1;
+    printf("New termios structure set\n");
+
+    state_machine(fd);
+    printf("Supervision frame read\n");
+    
     receive_inf_frame(fd);
     printf("Information frame received\n");
 
     char* ua_frame = assemble_supervision_frame(UA_CONTROL);
     write(fd, ua_frame, SUP_FRAME_SIZE);
     printf("Acknowledgement frame sent\n");
-
     /*
     if (control_rcv[0] == DISC_CONTROL){
         if (send_back_disc_frame(fd) != 0) 
             printf("Disconnection failed. \n");
             return 1;
     }*/
-        
+
     return 0;
+
 }
+
+
