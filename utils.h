@@ -13,6 +13,22 @@ char* assemble_supervision_frame(char control_field) {
     return sup_frame;
 }
 
+char* assemble_information_frame(char control_field, char* packet){
+    char* info_frame = malloc(INFO_FRAME_SIZE);
+    info_frame[0] = FLAG;
+    info_frame[1] = ADDRESS;
+    info_frame[2] = control_field;
+    info_frame[3] = ADDRESS ^ control_field;
+
+    for(int i = 0; i < DATA_FIELD_SIZE; i++){
+        info_frame[4 + i] = *packet;
+        packet++;
+    }
+
+    info_frame[24] = ADDRESS ^ control_field;
+    info_frame[25] = FLAG;
+}
+
 int create_termios_structure (int fd, const char *serialPortName){
     if (fd < 0) {
         perror(serialPortName);

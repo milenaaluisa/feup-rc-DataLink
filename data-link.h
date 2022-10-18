@@ -7,6 +7,7 @@
 #define SUP_FRAME_SIZE 5
 // size of information frame data field
 #define DATA_FIELD_SIZE 20
+#define INFO_FRAME_SIZE 26
 
 // frame fields
 #define FLAG 0x7E
