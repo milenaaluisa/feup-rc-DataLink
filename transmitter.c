@@ -1,72 +1,12 @@
 #include <fcntl.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <termios.h>
-#include <unistd.h>
 #include <signal.h>
 
 #include "data-link.h"
 #include "utils.h"
-
-
-enum State {START, FLAG_RCV, A_RCV, C_RCV, BCC_OK, STOP};
-enum State state = START;
-
-
-char transm_control_rcv[BYTE_SIZE];
+#include "ua-state-machine.h"
 
 int alarm_enabled = 0;
 int alarm_count = 0;
-
-void transm_start_transition_check(char byte_rcv) {
-    if (byte_rcv == FLAG)
-        state = FLAG_RCV;
-}
-
-
-
-void transm_flag_rcv_transition_check(char byte_rcv) {
-    if (byte_rcv == ADDRESS)
-        state = A_RCV;
-    else if (byte_rcv != FLAG)
-        state = START;
-}
-
-
-
-void transm_a_rcv_transition_check(char byte_rcv) {
-    if (byte_rcv == UA_CONTROL || byte_rcv == DISC_CONTROL) {
-        state = C_RCV;
-        transm_control_rcv[0] = byte_rcv;
-    }
-    else if (byte_rcv == FLAG)
-        state = FLAG_RCV;
-    else
-        state = START;
-}
-
-
-
-void transm_c_rcv_transition_check(char byte_rcv) {
-    if (byte_rcv == (ADDRESS ^ UA_CONTROL))
-        state = BCC_OK;
-    else if (byte_rcv == FLAG)
-        state = FLAG_RCV;
-    else
-        state = START;
-}
-
-
-void transm_bcc_ok_transition_check(char byte_rcv) {
-    if (byte_rcv == FLAG)
-        state = STOP;
-    else
-        state = START;
-}
-
 
 int transm_receive_inf_frame(int fd) {
     int is_escaped = 0;
@@ -86,35 +26,6 @@ int transm_receive_inf_frame(int fd) {
     printf("\n");
     return 0;
 }
-
-
-
-int transm_state_machine(int fd) {
-    char byte_rcv[BYTE_SIZE];
-    if (!read(fd, byte_rcv, BYTE_SIZE)) return 1;
-
-    while (state != STOP) {
-        if (state != START)
-            read(fd, byte_rcv, BYTE_SIZE);
-        printf("%08x\n", byte_rcv[0]);
-        switch (state) {
-        case START:
-            transm_start_transition_check(byte_rcv[0]); break;
-        case FLAG_RCV:
-            transm_flag_rcv_transition_check(byte_rcv[0]); break;
-        case A_RCV:
-            transm_a_rcv_transition_check(byte_rcv[0]); break;
-        case C_RCV:
-            transm_c_rcv_transition_check(byte_rcv[0]); break;
-        case BCC_OK:
-            transm_bcc_ok_transition_check(byte_rcv[0]); break;
-        }
-    }
-    printf("Supervision frame received back from receiver\n");
-    return 0;
-
-}
-
 
 void alarm_handler(int signal) {
     alarm_enabled = 0;
@@ -168,7 +79,7 @@ int stop_transmission(int fd) {
     return 1;
 }
 
-int  while_not_stop_alarm(int fd, char *set_frame){
+int while_not_stop_alarm(int fd, char* set_frame) {
     write(fd, set_frame, SUP_FRAME_SIZE);
     printf("Supervision frame sent\n");
     alarm(3);
@@ -183,11 +94,7 @@ int  while_not_stop_alarm(int fd, char *set_frame){
     printf("Information frame sent\n");
 
     return 0;
-
 }
-
-
-
 
 int alarm_helper(int fd) {
     (void) signal(SIGALRM, alarm_handler);
@@ -197,18 +104,14 @@ int alarm_helper(int fd) {
     char ua_frame[SUP_FRAME_SIZE];
 
     while (alarm_count < 3) {
-        if (!alarm_enabled) {
-            if (while_not_stop_alarm(fd, set_frame)) return 1;
-        }
-        if (!transm_state_machine(fd)) 
+        if (!alarm_enabled && while_not_stop_alarm(fd, set_frame))
+            return 1;
+        if (!state_machine(fd)) 
             return 0;
     }
     printf("Transmission failed\n");
     return 1;
-
 }
-
-
 
 int main(int argc, char *argv[]) {
     const char *serialPortName = argv[1];
@@ -225,10 +128,8 @@ int main(int argc, char *argv[]) {
     int fd = open(serialPortName, O_RDWR | O_NOCTTY);
     if (create_termios_structure(fd, serialPortName)) 
         return 1;
-    printf("New termios structure set\n");
 
     if (alarm_helper(fd)) 
         return 1;
     return 0;
-
 }
