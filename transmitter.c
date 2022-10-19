@@ -109,6 +109,9 @@ int data_transfer (int fd, char* data, int num_packets){
 }
 
 int stop_transmission(int fd) {
+    (void) signal(SIGALRM, alarm_handler);
+    printf("New alarm handler set\n");
+
     char* disc_frame = assemble_supervision_frame(DISC_CONTROL);
     char* ua_frame = assemble_supervision_frame(UA_CONTROL);
     char* disc_frame_rcv = malloc(SUP_FRAME_SIZE);
@@ -121,13 +124,14 @@ int stop_transmission(int fd) {
             alarm_enabled = 1;
         }
         if (!state_machine(fd) && control_rcv[0] == DISC_CONTROL) {
-            printf("Disconnection frame read\n")
+            printf("Disconnection frame read\n");
 
             write(fd, ua_frame, SUP_FRAME_SIZE);
             printf("Acknowledgement frame sent\n");
             return 0;
         }
     }
+    printf("Disconnection failed\n");
     return 1;
 }
 
@@ -148,6 +152,9 @@ int main(int argc, char *argv[]) {
         return 1;
 
     if (start_transmission(fd)) 
+        return 1;
+
+    if (stop_transmission(fd))
         return 1;
     return 0;
 }
