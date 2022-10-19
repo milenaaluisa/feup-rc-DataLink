@@ -120,10 +120,8 @@ int stop_transmission(int fd) {
             alarm(3);
             alarm_enabled = 1;
         }
-        if (read(fd, disc_frame_rcv, SUP_FRAME_SIZE)) {
-            for (int i = 0; i < SUP_FRAME_SIZE; i++)
-                printf("%08x\n", disc_frame_rcv[i]);
-            printf("Disconnection frame read\n");
+        if (!state_machine(fd) && control_rcv[0] == DISC_CONTROL) {
+            printf("Disconnection frame read\n")
 
             write(fd, ua_frame, SUP_FRAME_SIZE);
             printf("Acknowledgement frame sent\n");
