@@ -20,7 +20,7 @@ void flag_rcv_transition_check(char byte_rcv) {
 }
 
 void a_rcv_transition_check(char byte_rcv) {
-    if (byte_rcv == UA_CONTROL || byte_rcv == DISC_CONTROL || byte_rcv && RR_ACK == RR_ACK || byte_rcv && REJ_ACK == REJ_ACK) {
+    if (byte_rcv == UA_CONTROL || byte_rcv == DISC_CONTROL || (byte_rcv & RR_ACK) == RR_ACK || (byte_rcv & REJ_ACK) == REJ_ACK) {
         state = C_RCV;
         control_rcv[0] = byte_rcv;
     }
