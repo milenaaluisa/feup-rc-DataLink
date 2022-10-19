@@ -8,25 +8,6 @@
 int alarm_enabled = 0;
 int alarm_count = 0;
 
-int transm_receive_inf_frame(int fd) {
-    int is_escaped = 0;
-    char byte_rcv[BYTE_SIZE];
-
-    for (int i = 0; i < DATA_FIELD_SIZE; i++) {
-        read(fd, byte_rcv, BYTE_SIZE);
-        if (is_escaped) {
-            printf("%c", *byte_rcv ^ STF_XOR);
-            is_escaped = 0;
-        }
-        else if (*byte_rcv == ESCAPE)
-            is_escaped = 1;
-        else
-            printf("%c", *byte_rcv);
-    }
-    printf("\n");
-    return 0;
-}
-
 void alarm_handler(int signal) {
     alarm_enabled = 0;
     alarm_count++;
@@ -54,6 +35,34 @@ char* stuffing(char* data) {
     return stuffed_data;
 }
 
+int start_transmission(int fd) {
+    (void) signal(SIGALRM, alarm_handler);
+    printf("New alarm handler set\n");
+
+    char* set_frame = assemble_supervision_frame(SET_CONTROL);
+
+    while (alarm_count < 3) {
+        if (!alarm_enabled) {
+            write(fd, set_frame, SUP_FRAME_SIZE);
+            printf("Supervision frame sent\n");
+            alarm(3);
+            alarm_enabled = 1;
+            /* testing stuffing
+            char* data = (char*) malloc(DATA_FIELD_SIZE);
+            char* stuffed_data = (char*) malloc(DATA_FIELD_SIZE);
+            data = "Helloooooo world}~"; // } is 0x7d, ~ is 0x7e, becomes: }] and }^
+            stuffed_data = stuffing(data);
+            printf("%s\n", stuffed_data);
+            write(fd, stuffed_data, DATA_FIELD_SIZE);
+            printf("Information frame sent\n"); */
+        }
+        if (!state_machine(fd)) 
+            return 0;
+    }
+    printf("Transmission failed\n");
+    return 1;
+}
+
 int stop_transmission(int fd) {
     char* disc_frame = assemble_supervision_frame(DISC_CONTROL);
     char* ua_frame = assemble_supervision_frame(UA_CONTROL);
@@ -79,38 +88,23 @@ int stop_transmission(int fd) {
     return 1;
 }
 
-int while_not_stop_alarm(int fd, char* set_frame) {
-    write(fd, set_frame, SUP_FRAME_SIZE);
-    printf("Supervision frame sent\n");
-    alarm(3);
-    alarm_enabled = 1;
-    /* testing stuffing */
-    char* data = (char*) malloc(DATA_FIELD_SIZE);
-    char* stuffed_data = (char*) malloc(DATA_FIELD_SIZE);
-    data = "Helloooooo world}~"; // } is 0x7d, ~ is 0x7e, becomes: }] and }^
-    stuffed_data = stuffing(data);
-    printf("%s\n", stuffed_data);
-    write(fd, stuffed_data, DATA_FIELD_SIZE);
-    printf("Information frame sent\n");
+int transm_receive_inf_frame(int fd) {
+    int is_escaped = 0;
+    char byte_rcv[BYTE_SIZE];
 
-    return 0;
-}
-
-int alarm_helper(int fd) {
-    (void) signal(SIGALRM, alarm_handler);
-    printf("New alarm handler set\n");
-
-    char* set_frame = assemble_supervision_frame(SET_CONTROL);
-    char ua_frame[SUP_FRAME_SIZE];
-
-    while (alarm_count < 3) {
-        if (!alarm_enabled && while_not_stop_alarm(fd, set_frame))
-            return 1;
-        if (!state_machine(fd)) 
-            return 0;
+    for (int i = 0; i < DATA_FIELD_SIZE; i++) {
+        read(fd, byte_rcv, BYTE_SIZE);
+        if (is_escaped) {
+            printf("%c", *byte_rcv ^ STF_XOR);
+            is_escaped = 0;
+        }
+        else if (*byte_rcv == ESCAPE)
+            is_escaped = 1;
+        else
+            printf("%c", *byte_rcv);
     }
-    printf("Transmission failed\n");
-    return 1;
+    printf("\n");
+    return 0;
 }
 
 int main(int argc, char *argv[]) {
@@ -129,7 +123,7 @@ int main(int argc, char *argv[]) {
     if (create_termios_structure(fd, serialPortName)) 
         return 1;
 
-    if (alarm_helper(fd)) 
+    if (start_transmission(fd)) 
         return 1;
     return 0;
 }

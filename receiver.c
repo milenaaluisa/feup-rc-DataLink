@@ -20,6 +20,7 @@ int send_back_disc_frame(int fd) {
     return 1;
 }
 
+/* Testing destuffing
 int receive_inf_frame(int fd) {
     int is_escaped = 0;
     char byte_rcv[BYTE_SIZE];
@@ -37,7 +38,7 @@ int receive_inf_frame(int fd) {
     }
     printf("\n");
     return 0;
-}
+}*/
 
 int main(int argc, char *argv[]) {
     const char *serialPortName = argv[1];
@@ -58,8 +59,9 @@ int main(int argc, char *argv[]) {
     state_machine(fd);
     printf("Supervision frame read\n");
     
+    /* Testing destuffing
     receive_inf_frame(fd);
-    printf("Information frame received\n");
+    printf("Information frame received\n"); */
 
     char* ua_frame = assemble_supervision_frame(UA_CONTROL);
     write(fd, ua_frame, SUP_FRAME_SIZE);
