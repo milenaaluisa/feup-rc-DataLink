@@ -2,7 +2,7 @@
 
 #include "data-link.h"
 #include "utils.h"
-#include "set-state-machine.h"
+#include "receiver-state-machine.h"
 
 int send_back_disc_frame(int fd) {
     char* disc_frame = assemble_supervision_frame(DISC_CONTROL);

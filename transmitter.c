@@ -3,7 +3,7 @@
 
 #include "data-link.h"
 #include "utils.h"
-#include "ua-state-machine.h"
+#include "transmitter-state-machine.h"
 
 int alarm_enabled = 0;
 int alarm_count = 0;
