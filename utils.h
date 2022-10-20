@@ -5,48 +5,44 @@
 
 #include "data-link.h"
 
-
-// Função para calcular bcc2
-char calculate_bcc2(const char* data_rcv){
+char generate_bcc2(const char* data_rcv){
     char bcc2 = data_rcv[0];
-    for (int i = 1; i < DATA_FIELD_SIZE; i++){
-        bcc2 = (bcc2 ^ data_rcv[i]);
-    }   
+    for (int i = 1; i < DATA_FIELD_SIZE; i++)
+        bcc2 ^=  data_rcv[i];
     return bcc2;
 }
 
 char* assemble_supervision_frame(char control_field) {
     char* sup_frame = malloc(SUP_FRAME_SIZE);
-    sup_frame[0] = FLAG;
-    sup_frame[1] = ADDRESS;
-    sup_frame[2] = control_field;
-    sup_frame[3] = ADDRESS ^ control_field;
-    sup_frame[4] = FLAG;
+    sup_frame[FLAG1_IDX] = FLAG;
+    sup_frame[ADDRESS_IDX] = ADDRESS;
+    sup_frame[CONTROL_IDX] = control_field;
+    sup_frame[BCC1_IDX] = ADDRESS ^ control_field;
+    sup_frame[S_FLAG2_IDX] = FLAG;
 
     return sup_frame;
 }
 
 char* assemble_information_frame(char control_field, const char* packet) {
     char* info_frame = malloc(INFO_FRAME_SIZE);
-    info_frame[0] = FLAG;
-    info_frame[1] = ADDRESS;
-    info_frame[2] = control_field;
-    info_frame[3] = ADDRESS ^ control_field; 
+    info_frame[FLAG1_IDX] = FLAG;
+    info_frame[ADDRESS_IDX] = ADDRESS;
+    info_frame[CONTROL_IDX] = control_field;
+    info_frame[BCC1_IDX] = ADDRESS ^ control_field; 
 
     for (int i = 0; i < DATA_FIELD_SIZE; i++) {
-        info_frame[4 + i] = *packet;
+        info_frame[DATA_START_IDX + i] = *packet;
         packet++;
     }
 
-    info_frame[24] = calculate_bcc2(packet); // changed
-    info_frame[25] = FLAG;
+    info_frame[BCC2_IDX] = generate_bcc2(packet);
+    info_frame[I_FLAG2_IDX] = FLAG;
 }
 
-char assemble_info_frame_ctrl_field (int ns) {
+char assemble_info_frame_ctrl_field(int ns) {
     char control_field = INFO_FRAME_CONTROL;
     if (ns == 1)
-        control_field = control_field | BIT(6);
-
+        control_field |= BIT(6);
     return control_field;
 }
 
