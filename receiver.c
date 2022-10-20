@@ -3,6 +3,9 @@
 #include "data-link.h"
 #include "utils.h"
 #include "receiver-state-machine.h"
+#include "info-frame-state-machine.h"
+
+int frame_to_rcv;
 
 int send_back_disc_frame(int fd) {
     char* disc_frame = assemble_supervision_frame(DISC_CONTROL);
@@ -20,6 +23,7 @@ int send_back_disc_frame(int fd) {
     return 1;
 }
 
+// TODO: change to always receive 20 bytes
 /* Testing destuffing
 int receive_inf_frame(int fd) {
     int is_escaped = 0;
@@ -62,6 +66,9 @@ int main(int argc, char *argv[]) {
     /* Testing destuffing
     receive_inf_frame(fd);
     printf("Information frame received\n"); */
+    /* Receiving an information frame
+    char data_rcv[DATA_FIELD_SIZE];
+    info_state_machine(fd, frame_to_rcv, data_rcv);*/
 
     char* ua_frame = assemble_supervision_frame(UA_CONTROL);
     write(fd, ua_frame, SUP_FRAME_SIZE);

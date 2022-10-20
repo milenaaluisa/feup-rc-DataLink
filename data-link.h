@@ -19,7 +19,12 @@
 #define UA_CONTROL 0x07
 #define RR_ACK 0x05
 #define REJ_ACK 0x01
-#define INFO_FRAME_CTRL_FIELD 0x00
+#define INFO_FRAME_CONTROL 0x00 // TODO: check if needed
+
+// 6th bit of information frame's contol field will be set to 1 depending on Stop and Wait
+#define SET_INFO_FRAME_CONTROL BIT(6)
+// 7th bit of information frame's contol field will be set to 1 depending on Stop and Wait
+#define SET_SUP_FRAME_CONTROL BIT(7)
 
 // used for escaping occurences of flag inside information frame data field
 #define ESCAPE 0x7D

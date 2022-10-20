@@ -47,6 +47,7 @@ int start_transmission(int fd) {
             printf("Supervision frame sent\n");
             alarm(3);
             alarm_enabled = 1;
+            // TODO: change to always receive 20 bytes
             /* testing stuffing
             char* data = (char*) malloc(DATA_FIELD_SIZE);
             char* stuffed_data = (char*) malloc(DATA_FIELD_SIZE);
