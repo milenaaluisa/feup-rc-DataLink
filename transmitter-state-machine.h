@@ -5,7 +5,7 @@
 enum State {START, FLAG_RCV, A_RCV, C_RCV, BCC_OK, STOP};
 enum State state = START;
 
-char control_rcv[BYTE_SIZE];
+char control_rcv;
 
 void start_transition_check(char byte_rcv) {
     if (byte_rcv == FLAG)
@@ -24,7 +24,7 @@ void a_rcv_transition_check(char byte_rcv) {
         (byte_rcv & RR_ACK) == RR_ACK || 
         (byte_rcv & REJ_ACK) == REJ_ACK) {
         state = C_RCV;
-        control_rcv[0] = byte_rcv;
+        control_rcv = byte_rcv;
     }
     else if (byte_rcv == FLAG)
         state = FLAG_RCV;
@@ -33,7 +33,7 @@ void a_rcv_transition_check(char byte_rcv) {
 }
 
 void c_rcv_transition_check(char byte_rcv) {
-    if (byte_rcv == (ADDRESS ^ control_rcv[0]))
+    if (byte_rcv == (ADDRESS ^ control_rcv))
         state = BCC_OK;
     else if (byte_rcv == FLAG)
         state = FLAG_RCV;

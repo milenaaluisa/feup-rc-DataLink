@@ -46,6 +46,9 @@ int main(int argc, char *argv[]) {
     write(fd, ua_frame, SUP_FRAME_SIZE);
     printf("Acknowledgement frame sent\n");
 
+    char data_rcv[DATA_FIELD_BYTES];
+    info_state_machine(fd, 1, data_rcv);
+
     // TODO: Fix disconnection
     /*
     if (control_rcv[0] == DISC_CONTROL){

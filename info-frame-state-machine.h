@@ -2,10 +2,10 @@
 
 #include "data-link.h"
 
-enum InfoState {I_START, I_FLAG_RCV, I_A_RCV, I_C_RCV, BCC1_RCV, 
-                DATA_RCV, BCC2_RCV, I_STOP};
+enum InfoState {I_START, I_FLAG_RCV, I_A_RCV, I_C_RCV, BCC1_RCV, DATA_RCV, BCC2_RCV, I_STOP};
 enum InfoState info_state = I_START;
 
+char control_rcv;
 int byte_seq, has_error, is_escaped;
 
 char data_rcv[DATA_FIELD_BYTES];
@@ -29,8 +29,10 @@ void info_a_rcv_transition_check(char byte_rcv, int frame_to_rcv) {
     if (frame_to_rcv)
         expected_rcv = SET_INFO_FRAME_CONTROL;
 
-    if (byte_rcv == expected_rcv)
+    if (byte_rcv == expected_rcv) {
         info_state = I_C_RCV;
+        control_rcv = byte_rcv;
+    }
     else {
         info_state = I_START;
         has_error = 1;
@@ -38,8 +40,7 @@ void info_a_rcv_transition_check(char byte_rcv, int frame_to_rcv) {
 }
 
 void info_c_rcv_transition_check(char byte_rcv) {
-    char expected_bcc = 0x00; // TODO: change to call to function that calculates BCC
-    if (byte_rcv == expected_bcc)
+    if (byte_rcv == (ADDRESS ^ control_rcv))
         info_state = BCC1_RCV;
     else {
         info_state = I_START;
@@ -67,8 +68,7 @@ void info_bcc1_rcv_transition_check(char byte_rcv) {
 }
 
 void info_data_rcv_transition_check(char byte_rcv) {
-    char expected_bcc = 0x00; // TODO: change to call to function that calculates BCC
-    if (byte_rcv == expected_bcc)
+    if (byte_rcv == generate_bcc2(data_rcv))
         info_state = BCC2_RCV;
     else {
         info_state = I_START;

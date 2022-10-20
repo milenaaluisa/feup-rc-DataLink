@@ -7,7 +7,7 @@
 
 int alarm_enabled = 0;
 int alarm_count = 0;
-extern char control_rcv[BYTE_SIZE];
+extern char control_rcv;
 
 void alarm_handler(int signal) {
     alarm_enabled = 0;
@@ -55,8 +55,8 @@ int data_transfer(int fd, char* data, int num_packets) {
             }
 
             if (!state_machine(fd)) { 
-                nr = control_rcv[0] & BIT(7);
-                if (control_rcv[0] & RR_ACK == RR_ACK && nr != ns) {
+                nr = control_rcv & BIT(7);
+                if (control_rcv & RR_ACK == RR_ACK && nr != ns) {
                     num_successful_packets++;
                     data += DATA_FIELD_BYTES;
                     ns = (ns == 0) ? 1 : 0;
@@ -91,7 +91,7 @@ int stop_transmission(int fd) {
             alarm(3);
             alarm_enabled = 1;
         }
-        if (!state_machine(fd) && control_rcv[0] == DISC_CONTROL) {
+        if (!state_machine(fd) && control_rcv == DISC_CONTROL) {
             printf("Disconnection frame read\n");
 
             write(fd, ua_frame, SUP_FRAME_SIZE);
