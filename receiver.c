@@ -74,12 +74,12 @@ int main(int argc, char *argv[]) {
     write(fd, ua_frame, SUP_FRAME_SIZE);
     printf("Acknowledgement frame sent\n");
 
-    /*
+    // TODO: Fix disconnection
     if (control_rcv[0] == DISC_CONTROL){
         if (send_back_disc_frame(fd) != 0) 
             printf("Disconnection failed. \n");
             return 1;
-    }*/
+    }
 
     return 0;
 }

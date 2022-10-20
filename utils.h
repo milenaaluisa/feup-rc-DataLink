@@ -5,6 +5,16 @@
 
 #include "data-link.h"
 
+
+// Função para calcular bcc2
+char calculate_bcc2(const char* data_rcv){
+    char bcc2 = data_rcv[0];
+    for (int i = 1; i < DATA_FIELD_SIZE; i++){
+        bcc2 = (bcc2 ^ data_rcv[i]);
+    }   
+    return bcc2;
+}
+
 char* assemble_supervision_frame(char control_field) {
     char* sup_frame = malloc(SUP_FRAME_SIZE);
     sup_frame[0] = FLAG;
@@ -21,14 +31,14 @@ char* assemble_information_frame(char control_field, const char* packet) {
     info_frame[0] = FLAG;
     info_frame[1] = ADDRESS;
     info_frame[2] = control_field;
-    info_frame[3] = ADDRESS ^ control_field; // TODO: needs to be changed
+    info_frame[3] = ADDRESS ^ control_field; 
 
     for (int i = 0; i < DATA_FIELD_SIZE; i++) {
         info_frame[4 + i] = *packet;
         packet++;
     }
 
-    info_frame[24] = ADDRESS ^ control_field; // TODO: needs to be changed
+    info_frame[24] = calculate_bcc2(packet); // changed
     info_frame[25] = FLAG;
 }
 

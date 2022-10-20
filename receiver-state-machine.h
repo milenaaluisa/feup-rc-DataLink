@@ -31,7 +31,7 @@ void a_rcv_transition_check(char byte_rcv) {
 }
 
 void c_rcv_transition_check(char byte_rcv) {
-    if (byte_rcv == (ADDRESS ^ SET_CONTROL)) // TODO: needs to be changed
+    if (byte_rcv == (ADDRESS ^ control_rcv[0])) //  changed
         state = BCC_OK;
     else if (byte_rcv == FLAG)
         state = FLAG_RCV;
