@@ -8,7 +8,7 @@ enum InfoState info_state = I_START;
 
 int byte_seq, has_error, is_escaped;
 
-char data_rcv[DATA_FIELD_SIZE];
+char data_rcv[DATA_FIELD_BYTES];
 
 void info_start_transition_check(char byte_rcv) {
     if (byte_rcv == FLAG)
@@ -48,7 +48,7 @@ void info_c_rcv_transition_check(char byte_rcv) {
 }
 
 void info_bcc1_rcv_transition_check(char byte_rcv) {
-    if (byte_seq == DATA_FIELD_SIZE) {
+    if (byte_seq == DATA_FIELD_BYTES) {
         info_state = DATA_RCV;
         return;
     }
@@ -84,7 +84,7 @@ void info_bcc2_rcv_transition_check(char byte_rcv) {
 }
 
 int info_state_machine(int fd, int frame_to_rcv, char* data_rcv) {
-    memset(data_rcv, 0, DATA_FIELD_SIZE);
+    memset(data_rcv, 0, DATA_FIELD_BYTES);
     has_error = 0;
     is_escaped = 0;
 

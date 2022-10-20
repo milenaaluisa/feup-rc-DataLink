@@ -14,28 +14,6 @@ void alarm_handler(int signal) {
     alarm_count++;
 }
 
-char* stuffing(char* data) {
-    int stuffed_data_size = 0;
-    char* stuffed_data = (char*) malloc(DATA_FIELD_SIZE);
-    char* stuffed_data_ptr = stuffed_data;
-
-    while (stuffed_data_size < DATA_FIELD_SIZE) {
-        if (*data == FLAG || *data == ESCAPE) {
-            *stuffed_data_ptr = ESCAPE;
-            stuffed_data_ptr++;
-            stuffed_data_size++;
-            *stuffed_data_ptr = *data ^ STF_XOR;
-        }
-        else
-            *stuffed_data_ptr = *data;
-
-        data++;
-        stuffed_data_ptr++;
-        stuffed_data_size++;
-    }
-    return stuffed_data;
-}
-
 int start_transmission(int fd) {
     (void) signal(SIGALRM, alarm_handler);
     printf("New alarm handler set\n");
@@ -48,15 +26,6 @@ int start_transmission(int fd) {
             printf("Supervision frame sent\n");
             alarm(3);
             alarm_enabled = 1;
-            // TODO: change to always receive 20 bytes
-            /* testing stuffing
-            char* data = (char*) malloc(DATA_FIELD_SIZE);
-            char* stuffed_data = (char*) malloc(DATA_FIELD_SIZE);
-            data = "Helloooooo world}~"; // } is 0x7d, ~ is 0x7e, becomes: }] and }^
-            stuffed_data = stuffing(data);
-            printf("%s\n", stuffed_data);
-            write(fd, stuffed_data, DATA_FIELD_SIZE);
-            printf("Information frame sent\n"); */
         }
         if (!state_machine(fd)) 
             return 0;
@@ -65,7 +34,8 @@ int start_transmission(int fd) {
     return 1;
 }
 
-int data_transfer (int fd, char* data, int num_packets){
+/* commented for now because of changes to function assemble_information_frame()
+int data_transfer(int fd, char* data, int num_packets) {
     int ns = 0, nr;
     int num_successful_packets = 0;
     int reply_from_receiver;
@@ -77,7 +47,6 @@ int data_transfer (int fd, char* data, int num_packets){
         reply_from_receiver = 0;
 
         while (alarm_count < 3) {
-
             if (!alarm_enabled) {
                 write(fd, info_frame, INFO_FRAME_SIZE);
                 printf("Information frame sent\n");
@@ -85,29 +54,27 @@ int data_transfer (int fd, char* data, int num_packets){
                 alarm_enabled = 1;
             }
 
-            if (!state_machine(fd)){ 
+            if (!state_machine(fd)) { 
                 nr = control_rcv[0] & BIT(7);
-
-                if (control_rcv[0] & RR_ACK == RR_ACK && nr != ns){
+                if (control_rcv[0] & RR_ACK == RR_ACK && nr != ns) {
                     num_successful_packets++;
-                    data += DATA_FIELD_SIZE;
+                    data += DATA_FIELD_BYTES;
                     ns = (ns == 0) ? 1 : 0;
-                    control_field = assemble_info_frame_ctrl_field (ns);
+                    control_field = assemble_info_frame_ctrl_field(ns);
                     info_frame =  assemble_information_frame(control_field, data);
                 }
-
                 reply_from_receiver = 1;
                 break;
             }
         }
+
         if (!reply_from_receiver) {
             printf("Transmission failed\n");
             return 1;
         }
     }
-
     return 0;
-}
+} */
 
 int stop_transmission(int fd) {
     (void) signal(SIGALRM, alarm_handler);
@@ -155,7 +122,19 @@ int main(int argc, char *argv[]) {
     if (start_transmission(fd)) 
         return 1;
 
+    /* Testing information frame assembling
+    char control_field = BIT(6);
+    char* packet = (char*) malloc(DATA_FIELD_BYTES);
+    packet = "Helloooooooo world}~";
+    char* frame = (char*) malloc(INFO_FRAME_SIZE);
+    int frame_size = assemble_information_frame(control_field, packet, frame);
+    for (int i = 0; i < frame_size; i++) {
+        printf("%08x, %c\n", frame[i], frame[i]);
+    }*/
+
+    /*
     if (stop_transmission(fd))
         return 1;
+    */
     return 0;
 }

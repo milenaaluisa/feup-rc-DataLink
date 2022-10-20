@@ -7,9 +7,30 @@
 
 char generate_bcc2(const char* data_rcv){
     char bcc2 = data_rcv[0];
-    for (int i = 1; i < DATA_FIELD_SIZE; i++)
+    for (int i = 1; i < DATA_FIELD_BYTES; i++)
         bcc2 ^=  data_rcv[i];
     return bcc2;
+}
+
+int stuffing(char* data, char* stuffed_data) {
+    int stuffed_data_size = 0;
+    char* stuffed_data_ptr = stuffed_data;
+
+    for (int i = 0; i < DATA_FIELD_BYTES; i++) {
+        if (*data == FLAG || *data == ESCAPE) {
+            *stuffed_data_ptr = ESCAPE;
+            stuffed_data_ptr++;
+            stuffed_data_size++;
+            *stuffed_data_ptr = *data ^ STF_XOR;
+        }
+        else
+            *stuffed_data_ptr = *data;
+
+        data++;
+        stuffed_data_ptr++;
+        stuffed_data_size++;
+    }
+    return stuffed_data_size;
 }
 
 char* assemble_supervision_frame(char control_field) {
@@ -23,20 +44,23 @@ char* assemble_supervision_frame(char control_field) {
     return sup_frame;
 }
 
-char* assemble_information_frame(char control_field, const char* packet) {
-    char* info_frame = malloc(INFO_FRAME_SIZE);
+int assemble_information_frame(char control_field, char* packet, char* info_frame) {
     info_frame[FLAG1_IDX] = FLAG;
     info_frame[ADDRESS_IDX] = ADDRESS;
     info_frame[CONTROL_IDX] = control_field;
     info_frame[BCC1_IDX] = ADDRESS ^ control_field; 
 
-    for (int i = 0; i < DATA_FIELD_SIZE; i++) {
-        info_frame[DATA_START_IDX + i] = *packet;
-        packet++;
+    char* stuffed_data = (char*) malloc(DATA_FIELD_BYTES*2);
+    int stuffed_data_size = stuffing(packet, stuffed_data);
+    int info_frame_size = stuffed_data_size + 6;
+    for (int i = 0; i < stuffed_data_size; i++) {
+        info_frame[DATA_START_IDX + i] = *stuffed_data;
+        stuffed_data++;
     }
 
-    info_frame[BCC2_IDX] = generate_bcc2(packet);
-    info_frame[I_FLAG2_IDX] = FLAG;
+    info_frame[BCC2_IDX(stuffed_data_size)] = generate_bcc2(packet);
+    info_frame[I_FLAG2_IDX(stuffed_data_size)] = FLAG;
+    return info_frame_size;
 }
 
 char assemble_info_frame_ctrl_field(int ns) {

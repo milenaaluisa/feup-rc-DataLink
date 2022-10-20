@@ -23,27 +23,6 @@ int send_back_disc_frame(int fd) {
     return 1;
 }
 
-// TODO: change to always receive 20 bytes
-/* Testing destuffing
-int receive_inf_frame(int fd) {
-    int is_escaped = 0;
-    char byte_rcv[BYTE_SIZE];
-
-    for (int i = 0; i < DATA_FIELD_SIZE; i++) {
-        read(fd, byte_rcv, BYTE_SIZE);
-        if (is_escaped) {
-            printf("%c", *byte_rcv ^ STF_XOR);
-            is_escaped = 0;
-        }
-        else if (*byte_rcv == ESCAPE)
-            is_escaped = 1;
-        else
-            printf("%c", *byte_rcv);
-    }
-    printf("\n");
-    return 0;
-}*/
-
 int main(int argc, char *argv[]) {
     const char *serialPortName = argv[1];
     if (argc < 2) {
@@ -62,24 +41,19 @@ int main(int argc, char *argv[]) {
 
     state_machine(fd);
     printf("Supervision frame read\n");
-    
-    /* Testing destuffing
-    receive_inf_frame(fd);
-    printf("Information frame received\n"); */
-    /* Receiving an information frame
-    char data_rcv[DATA_FIELD_SIZE];
-    info_state_machine(fd, frame_to_rcv, data_rcv);*/
 
     char* ua_frame = assemble_supervision_frame(UA_CONTROL);
     write(fd, ua_frame, SUP_FRAME_SIZE);
     printf("Acknowledgement frame sent\n");
 
     // TODO: Fix disconnection
+    /*
     if (control_rcv[0] == DISC_CONTROL){
         if (send_back_disc_frame(fd) != 0) 
             printf("Disconnection failed. \n");
             return 1;
     }
+    */
 
     return 0;
 }
