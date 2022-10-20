@@ -7,6 +7,7 @@
 
 int alarm_enabled = 0;
 int alarm_count = 0;
+extern char control_rcv[BYTE_SIZE];
 
 void alarm_handler(int signal) {
     alarm_enabled = 0;
@@ -64,7 +65,54 @@ int start_transmission(int fd) {
     return 1;
 }
 
+int data_transfer (int fd, char* data, int num_packets){
+    int ns = 0, nr;
+    int num_successful_packets = 0;
+    int reply_from_receiver;
+    char control_field = assemble_info_frame_ctrl_field (ns);
+    char* info_frame = assemble_information_frame(control_field, data);
+
+    while (num_successful_packets < num_packets) {
+        (void) signal(SIGALRM, alarm_handler);
+        reply_from_receiver = 0;
+
+        while (alarm_count < 3) {
+
+            if (!alarm_enabled) {
+                write(fd, info_frame, INFO_FRAME_SIZE);
+                printf("Information frame sent\n");
+                alarm(3);
+                alarm_enabled = 1;
+            }
+
+            if (!state_machine(fd)){ 
+                nr = control_rcv[0] & BIT(7);
+
+                if (control_rcv[0] & RR_ACK == RR_ACK && nr != ns){
+                    num_successful_packets++;
+                    data += DATA_FIELD_SIZE;
+                    ns = (ns == 0) ? 1 : 0;
+                    control_field = assemble_info_frame_ctrl_field (ns);
+                    info_frame =  assemble_information_frame(control_field, data);
+                }
+
+                reply_from_receiver = 1;
+                break;
+            }
+        }
+        if (!reply_from_receiver) {
+            printf("Transmission failed\n");
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
 int stop_transmission(int fd) {
+    (void) signal(SIGALRM, alarm_handler);
+    printf("New alarm handler set\n");
+
     char* disc_frame = assemble_supervision_frame(DISC_CONTROL);
     char* ua_frame = assemble_supervision_frame(UA_CONTROL);
     char* disc_frame_rcv = malloc(SUP_FRAME_SIZE);
@@ -76,9 +124,7 @@ int stop_transmission(int fd) {
             alarm(3);
             alarm_enabled = 1;
         }
-        if (read(fd, disc_frame_rcv, SUP_FRAME_SIZE)) {
-            for (int i = 0; i < SUP_FRAME_SIZE; i++)
-                printf("%08x\n", disc_frame_rcv[i]);
+        if (!state_machine(fd) && control_rcv[0] == DISC_CONTROL) {
             printf("Disconnection frame read\n");
 
             write(fd, ua_frame, SUP_FRAME_SIZE);
@@ -86,26 +132,8 @@ int stop_transmission(int fd) {
             return 0;
         }
     }
+    printf("Disconnection failed\n");
     return 1;
-}
-
-int transm_receive_inf_frame(int fd) {
-    int is_escaped = 0;
-    char byte_rcv[BYTE_SIZE];
-
-    for (int i = 0; i < DATA_FIELD_SIZE; i++) {
-        read(fd, byte_rcv, BYTE_SIZE);
-        if (is_escaped) {
-            printf("%c", *byte_rcv ^ STF_XOR);
-            is_escaped = 0;
-        }
-        else if (*byte_rcv == ESCAPE)
-            is_escaped = 1;
-        else
-            printf("%c", *byte_rcv);
-    }
-    printf("\n");
-    return 0;
 }
 
 int main(int argc, char *argv[]) {
@@ -125,6 +153,9 @@ int main(int argc, char *argv[]) {
         return 1;
 
     if (start_transmission(fd)) 
+        return 1;
+
+    if (stop_transmission(fd))
         return 1;
     return 0;
 }

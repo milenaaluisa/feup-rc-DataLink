@@ -32,6 +32,14 @@ char* assemble_information_frame(char control_field, const char* packet) {
     info_frame[25] = FLAG;
 }
 
+char assemble_info_frame_ctrl_field (int ns) {
+    char control_field = INFO_FRAME_CONTROL;
+    if (ns == 1)
+        control_field = control_field | BIT(6);
+
+    return control_field;
+}
+
 int create_termios_structure(int fd, const char* serialPortName) {
     if (fd < 0) {
         perror(serialPortName);
