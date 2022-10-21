@@ -5,8 +5,6 @@
 #include "receiver-state-machine.h"
 #include "info-frame-state-machine.h"
 
-int frame_to_rcv;
-
 int send_back_disc_frame(int fd) {
     char* disc_frame = assemble_supervision_frame(DISC_CONTROL);
     char* ua_frame_rcv = malloc(SUP_FRAME_SIZE);
@@ -21,6 +19,35 @@ int send_back_disc_frame(int fd) {
         return 0;
     }
     return 1;
+}
+
+// TODO: Test
+int receive_data(int fd, char* data, int num_packets) {
+    int ns = 0, nr;
+    int num_successful_packets = 0;
+    char* data_rcv = (char*) malloc(DATA_FIELD_BYTES);
+    char* acknowledgement = (char*) malloc(SUP_FRAME_SIZE);
+    char control_field;
+
+    while (num_successful_packets < num_packets) {
+        int has_error = info_frame_state_machine(fd, ns, data_rcv);
+        if (!has_error) {
+            ns = (ns == 0) ? 1 : 0;
+            control_field = assemble_rr_frame_ctrl_field(ns);
+            acknowledgement = assemble_supervision_frame(control_field);
+            memcpy(data + num_successful_packets*DATA_FIELD_BYTES, data_rcv, DATA_FIELD_BYTES);
+            num_successful_packets++;
+        }
+        else if (has_error == 2) {
+            control_field = assemble_rr_frame_ctrl_field(ns);
+            acknowledgement = assemble_supervision_frame(control_field);
+        }
+        else if (has_error == 3) {
+            control_field = assemble_rej_frame_ctrl_field(ns);
+            acknowledgement = assemble_supervision_frame(control_field);
+        }
+    }
+    return 0; 
 }
 
 int main(int argc, char *argv[]) {
@@ -46,8 +73,9 @@ int main(int argc, char *argv[]) {
     write(fd, ua_frame, SUP_FRAME_SIZE);
     printf("Acknowledgement frame sent\n");
 
-    char data_rcv[DATA_FIELD_BYTES];
-    info_state_machine(fd, 1, data_rcv);
+    /* Draft testing receive_data
+    char* data = (char*) malloc(DATA_FIELD_BYTES * 4);
+    receive_data(fd, data, 4); */
 
     // TODO: Fix disconnection
     /*
