@@ -5,7 +5,17 @@
 #include "receiver-state-machine.h"
 #include "info-frame-state-machine.h"
 
-int send_back_disc_frame(int fd) {
+int start_transmission(int fd) {
+    state_machine(fd);
+    printf("Supervision frame read\n");
+
+    char* ua_frame = assemble_supervision_frame(UA_CONTROL);
+    write(fd, ua_frame, SUP_FRAME_SIZE);
+    printf("Acknowledgement frame sent\n");
+    return 0;
+}
+
+int stop_transmission(int fd) {
     char* disc_frame = assemble_supervision_frame(DISC_CONTROL);
     char* ua_frame_rcv = malloc(SUP_FRAME_SIZE);
 
@@ -66,12 +76,8 @@ int main(int argc, char *argv[]) {
     if (create_termios_structure(fd, serialPortName)) 
         return 1;
 
-    state_machine(fd);
-    printf("Supervision frame read\n");
-
-    char* ua_frame = assemble_supervision_frame(UA_CONTROL);
-    write(fd, ua_frame, SUP_FRAME_SIZE);
-    printf("Acknowledgement frame sent\n");
+    if (start_transmission(fd))
+        return 1;
 
     /* Draft testing receive_data
     char* data = (char*) malloc(DATA_FIELD_BYTES * 4);
@@ -85,6 +91,5 @@ int main(int argc, char *argv[]) {
             return 1;
     }
     */
-
     return 0;
 }

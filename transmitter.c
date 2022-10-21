@@ -34,6 +34,33 @@ int start_transmission(int fd) {
     return 1;
 }
 
+int stop_transmission(int fd) {
+    (void) signal(SIGALRM, alarm_handler);
+    printf("New alarm handler set\n");
+
+    char* disc_frame = assemble_supervision_frame(DISC_CONTROL);
+    char* ua_frame = assemble_supervision_frame(UA_CONTROL);
+    char* disc_frame_rcv = malloc(SUP_FRAME_SIZE);
+
+    while (alarm_count < 3) {
+        if (!alarm_enabled) {
+            write(fd, disc_frame, SUP_FRAME_SIZE);
+            printf("Disconnection frame sent\n");
+            alarm(3);
+            alarm_enabled = 1;
+        }
+        if (!state_machine(fd) && control_rcv == DISC_CONTROL) {
+            printf("Disconnection frame read\n");
+
+            write(fd, ua_frame, SUP_FRAME_SIZE);
+            printf("Acknowledgement frame sent\n");
+            return 0;
+        }
+    }
+    printf("Disconnection failed\n");
+    return 1;
+}
+
 /* commented for now because of changes to function assemble_information_frame()
 int data_transfer(int fd, char* data, int num_packets) {
     int ns = 0, nr;
@@ -75,33 +102,6 @@ int data_transfer(int fd, char* data, int num_packets) {
     }
     return 0;
 } */
-
-int stop_transmission(int fd) {
-    (void) signal(SIGALRM, alarm_handler);
-    printf("New alarm handler set\n");
-
-    char* disc_frame = assemble_supervision_frame(DISC_CONTROL);
-    char* ua_frame = assemble_supervision_frame(UA_CONTROL);
-    char* disc_frame_rcv = malloc(SUP_FRAME_SIZE);
-
-    while (alarm_count < 3) {
-        if (!alarm_enabled) {
-            write(fd, disc_frame, SUP_FRAME_SIZE);
-            printf("Disconnection frame sent\n");
-            alarm(3);
-            alarm_enabled = 1;
-        }
-        if (!state_machine(fd) && control_rcv == DISC_CONTROL) {
-            printf("Disconnection frame read\n");
-
-            write(fd, ua_frame, SUP_FRAME_SIZE);
-            printf("Acknowledgement frame sent\n");
-            return 0;
-        }
-    }
-    printf("Disconnection failed\n");
-    return 1;
-}
 
 int main(int argc, char *argv[]) {
     const char *serialPortName = argv[1];
