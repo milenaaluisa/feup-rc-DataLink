@@ -5,13 +5,6 @@
 
 #include "data-link.h"
 
-char generate_bcc2(const char* data_rcv){
-    char bcc2 = data_rcv[0];
-    for (int i = 1; i < DATA_FIELD_BYTES; i++)
-        bcc2 ^=  data_rcv[i];
-    return bcc2;
-}
-
 int stuffing(char* data, char* stuffed_data) {
     int stuffed_data_size = 0;
     char* stuffed_data_ptr = stuffed_data;
@@ -31,6 +24,13 @@ int stuffing(char* data, char* stuffed_data) {
         stuffed_data_size++;
     }
     return stuffed_data_size;
+}
+
+char generate_bcc2(const char* data_rcv){
+    char bcc2 = data_rcv[0];
+    for (int i = 1; i < DATA_FIELD_BYTES; i++)
+        bcc2 ^=  data_rcv[i];
+    return bcc2;
 }
 
 char* assemble_supervision_frame(char control_field) {
@@ -65,8 +65,22 @@ int assemble_information_frame(char control_field, char* packet, char* info_fram
 
 char assemble_info_frame_ctrl_field(int ns) {
     char control_field = INFO_FRAME_CONTROL;
-    if (ns == 1)
-        control_field |= BIT(6);
+    if (ns)
+        control_field |= SET_INFO_FRAME_CONTROL;
+    return control_field;
+}
+
+char assemble_rr_frame_ctrl_field(int ns) {
+    char control_field = RR_ACK;
+    if (ns)
+        control_field |= SET_SUP_FRAME_CONTROL;
+    return control_field;
+}
+
+char assemble_rej_frame_ctrl_field(int ns) {
+    char control_field = REJ_ACK;
+    if (ns)
+        control_field |= SET_SUP_FRAME_CONTROL;
     return control_field;
 }
 
