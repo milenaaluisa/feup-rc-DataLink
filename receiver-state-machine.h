@@ -3,7 +3,7 @@
 #include "data-link.h"
 
 enum State {START, FLAG_RCV, A_RCV, C_RCV, BCC_OK, STOP};
-enum State state = START;
+enum State state;
 
 char control_rcv;
 
@@ -48,6 +48,7 @@ void bcc_ok_transition_check(char byte_rcv) {
 
 int state_machine(int fd) {
     char byte_rcv[BYTE_SIZE];
+    state = START;
     while (state != STOP) {
         read(fd, byte_rcv, BYTE_SIZE);
         printf("%08x\n", byte_rcv[0]);

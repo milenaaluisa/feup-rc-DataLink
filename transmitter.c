@@ -45,7 +45,6 @@ int stop_transmission(int fd) {
     while (alarm_count < 3) {
         if (!alarm_enabled) {
             write(fd, disc_frame, SUP_FRAME_SIZE);
-            printf("Disconnection frame sent\n");
             alarm(3);
             alarm_enabled = 1;
         }
@@ -134,9 +133,9 @@ int main(int argc, char *argv[]) {
         printf("%08x, %c\n", frame[i], frame[i]);
     }*/
 
-    /*
+    
     if (stop_transmission(fd))
         return 1;
-    */
+
     return 0;
 }

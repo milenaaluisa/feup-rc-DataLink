@@ -16,19 +16,17 @@ int start_transmission(int fd) {
 }
 
 int stop_transmission(int fd) {
+    state_machine(fd);
+    printf("Disconnection frame read\n");
+
     char* disc_frame = assemble_supervision_frame(DISC_CONTROL);
     char* ua_frame_rcv = malloc(SUP_FRAME_SIZE);
-
     write(fd, disc_frame, SUP_FRAME_SIZE);
     printf("Disconnection frame sent\n");
 
-    if (read(fd, ua_frame_rcv, SUP_FRAME_SIZE)) {
-        for (int i = 0; i < SUP_FRAME_SIZE; i++)
-            printf("%08x\n", ua_frame_rcv[i]);
-        printf("Acknowledgement frame read\n");
-        return 0;
-    }
-    return 1;
+    state_machine(fd);
+    printf("Acknowledgement frame read\n");
+    return 0;
 }
 
 // TODO: Test
@@ -83,13 +81,10 @@ int main(int argc, char *argv[]) {
     char* data = (char*) malloc(DATA_FIELD_BYTES * 4);
     receive_data(fd, data, 4); */
 
-    // TODO: Fix disconnection
-    /*
-    if (control_rcv[0] == DISC_CONTROL){
-        if (send_back_disc_frame(fd) != 0) 
+    if (stop_transmission(fd)){ 
             printf("Disconnection failed. \n");
             return 1;
     }
-    */
+    
     return 0;
 }
