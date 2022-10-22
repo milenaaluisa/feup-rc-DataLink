@@ -3,7 +3,7 @@
 #include "data-link.h"
 
 enum InfoState {I_START, I_FLAG_RCV, I_A_RCV, I_C_RCV, BCC1_RCV, DATA_RCV, BCC2_RCV, I_STOP};
-enum InfoState info_state = I_START;
+enum InfoState info_state;
 
 char control_rcv;
 int has_error, byte_seq, is_escaped;
@@ -85,6 +85,7 @@ int info_frame_state_machine(int fd, int ns, char* data_rcv) {
     // has_error = 1 indicates an error in the frame's header
     // has_error = 2 indicates that the frame being received is the worng one (duplicated)
     // has_error = 3 indicates an error in the frame's data field
+    info_state = I_START;
     has_error = 0;
     is_escaped = 0;
 
