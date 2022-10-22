@@ -17,12 +17,12 @@ int llopen(LinkLayer connection_parameters) {
     return fd;
 }
 
-int llwrite(const unsigned char *buf, int buf_size) {
+int llwrite(int fd, const char* buffer, int buffer_size) {
     // TODO
     return 0;
 }
 
-int llread(unsigned char *packet) {
+int llread(int fd, char* packet) {
     // TODO
     return 0;
 }
