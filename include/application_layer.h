@@ -1,6 +1,8 @@
 #ifndef _APPLICATION_LAYER_H_
 #define _APPLICATION_LAYER_H_
 
+int send_file(int fd, const char* filename);
+
 // Application layer main function.
 // Arguments:
 //   serialPort: Serial port name (e.g., /dev/ttyS0).
