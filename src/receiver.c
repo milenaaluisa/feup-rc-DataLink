@@ -10,7 +10,7 @@
 #include "sup_rx_state_machine.h"
 #include "info_state_machine.h"
 
-int start_transmission(int fd) {
+int rx_start_transmission(int fd) {
     rx_state_machine(fd);
     printf("Supervision frame read\n");
 
@@ -20,7 +20,7 @@ int start_transmission(int fd) {
     return 0;
 }
 
-int stop_transmission(int fd) {
+int rx_stop_transmission(int fd) {
     rx_state_machine(fd);
     printf("Disconnection frame read\n");
 
@@ -58,7 +58,7 @@ int receive_data(int fd, char* data, int num_packets) {
             control_field = assemble_rej_frame_ctrl_field(ns);
             acknowledgement = assemble_supervision_frame(control_field);
         }
-        // TODO: send acknowledgement
+        write(fd, acknowledgement, SUP_FRAME_SIZE);
     }
     return 0; 
 }

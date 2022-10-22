@@ -1,4 +1,3 @@
-#include <fcntl.h>
 #include <unistd.h>
 #include <signal.h>
 #include <stdio.h>
@@ -18,7 +17,7 @@ void alarm_handler(int signal) {
     alarm_count++;
 }
 
-int start_transmission(int fd) {
+int tx_start_transmission(int fd) {
     (void) signal(SIGALRM, alarm_handler);
     printf("New alarm handler set\n");
 
@@ -38,7 +37,7 @@ int start_transmission(int fd) {
     return 1;
 }
 
-int stop_transmission(int fd) {
+int tx_stop_transmission(int fd) {
     (void) signal(SIGALRM, alarm_handler);
     printf("New alarm handler set\n");
 
@@ -63,7 +62,8 @@ int stop_transmission(int fd) {
     return 1;
 }
 
-int data_transfer(int fd, char* data, int num_packets) {
+// TODO: Test
+int send_data(int fd, char* data, int num_packets) {
     int ns = 0, nr;
     int num_successful_packets = 0;
     int reply_from_receiver;
