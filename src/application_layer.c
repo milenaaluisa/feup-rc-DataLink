@@ -52,7 +52,7 @@ int receive_file(int fd) {
     return 0;
 }
 
-int applicationLayer(const char *serial_port, const char *role, const char *filename) {
+int application_layer(const char *serial_port, const char *role, const char *filename) {
     LinkLayer connection_parameters;
     strcpy(connection_parameters.serial_port, serial_port);
 

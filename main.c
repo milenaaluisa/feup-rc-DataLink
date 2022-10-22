@@ -25,7 +25,7 @@ int main(int argc, char *argv[]) {
            role,
            filename);
 
-    if (applicationLayer(serial_port, role, filename))
+    if (application_layer(serial_port, role, filename))
         return 1;
     return 0;
 }

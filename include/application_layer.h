@@ -11,6 +11,6 @@ int receive_file(int fd);
 //   role: Application role {"tx", "rx"}.
 //   filename: Name of the file to send / receive.
 // Return "0" on success or "1" on error.
-int applicationLayer(const char *serial_port, const char *role, const char *filename);
+int application_layer(const char *serial_port, const char *role, const char *filename);
 
 #endif // _APPLICATION_LAYER_H_
