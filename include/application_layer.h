@@ -3,6 +3,8 @@
 
 int send_file(int fd, const char* filename);
 
+int receive_file(int fd);
+
 // Application layer main function.
 // Arguments:
 //   serialPort: Serial port name (e.g., /dev/ttyS0).
