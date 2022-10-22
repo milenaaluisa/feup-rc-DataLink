@@ -17,10 +17,6 @@ typedef struct {
 #define N_TRIES 3
 #define TIMEOUT 4
 
-// SIZE of maximum acceptable payload.
-// Maximum number of bytes that application layer should send to link layer
-#define MAX_PAYLOAD_SIZE 1000
-
 #define BIT(n) (0x1 << (n))
 
 // size to be read when receiving a transmission

@@ -13,7 +13,10 @@ int send_file(int fd, const char* filename) {
     fseek(fptr, 0, SEEK_END);
     long file_size = ftell(fptr);
     rewind(fptr);
-    printf("%ld\n", file_size);
+
+    char* data = (char*) malloc(file_size);
+    if (fread(data, sizeof(char), file_size, fptr) < file_size)
+        return 1;
 
     // TODO
     // send control packet
@@ -26,7 +29,7 @@ int send_file(int fd, const char* filename) {
 }
 
 int receive_file(int fd) {
-    char* filename = ""; // TODO: remove initialization
+    char src_filename[1] = "a"; // TODO: remove initialization
     long file_size = 0; // TODO: remove initialization
 
     // TODO
@@ -34,10 +37,13 @@ int receive_file(int fd) {
     char* data = (char*) malloc(file_size);
     // read data
     // read control packet
+    
+    char* dest_filename = (char*) malloc(sizeof("received_") + sizeof(src_filename) - 1);
+    strcpy(dest_filename, "received_");
+    strcat(dest_filename, src_filename);
 
-    strcat("received_", filename);
     FILE* fptr;
-    if (!(fptr = fopen(filename, "r")))
+    if (!(fptr = fopen(dest_filename, "w")))
         return 1;
     if (fwrite(data, sizeof(char), file_size, fptr) < file_size)
         return 1;

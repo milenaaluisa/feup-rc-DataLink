@@ -12,24 +12,24 @@
 
 int rx_start_transmission(int fd) {
     rx_state_machine(fd);
-    printf("Supervision frame read\n");
+    printf("SET supervision frame read\n");
 
     char* ua_frame = assemble_supervision_frame(UA_CONTROL);
     write(fd, ua_frame, SUP_FRAME_SIZE);
-    printf("Acknowledgement frame sent\n");
+    printf("UA supervision frame sent\n");
     return 0;
 }
 
 int rx_stop_transmission(int fd) {
     rx_state_machine(fd);
-    printf("Disconnection frame read\n");
+    printf("DISC supervision frame read\n");
 
     char* disc_frame = assemble_supervision_frame(DISC_CONTROL);
     write(fd, disc_frame, SUP_FRAME_SIZE);
-    printf("Disconnection frame sent\n");
+    printf("DISC supervision frame sent\n");
 
     rx_state_machine(fd);
-    printf("Acknowledgement frame read\n");
+    printf("UA supervision frame read\n");
     return 0;
 }
 

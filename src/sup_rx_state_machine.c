@@ -50,7 +50,6 @@ int rx_state_machine(int fd) {
     state = START;
     while (state != STOP) {
         read(fd, byte_rcv, BYTE_SIZE);
-        // printf("%08x\n", byte_rcv[0]);
 
         switch (state) {
         case START:

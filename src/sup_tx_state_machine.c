@@ -1,4 +1,5 @@
 #include <unistd.h>
+#include <stdio.h>
 
 #include "sup_tx_state_machine.h"
 #include "link_layer.h"
@@ -56,7 +57,6 @@ int tx_state_machine(int fd) {
     while (state != STOP) {
         if (state != START)
             read(fd, byte_rcv, BYTE_SIZE);
-        // printf("%08x\n", byte_rcv[0]);
 
         switch (state) {
         case START:
@@ -74,6 +74,6 @@ int tx_state_machine(int fd) {
         }
     }
 
-    // printf("Supervision frame received back from receiver\n");
+    printf("UA supervision frame received\n");
     return 0;
 }

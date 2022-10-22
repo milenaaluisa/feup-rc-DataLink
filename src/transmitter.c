@@ -26,7 +26,7 @@ int tx_start_transmission(int fd) {
     while (alarm_count < 3) {
         if (!alarm_enabled) {
             write(fd, set_frame, SUP_FRAME_SIZE);
-            printf("Supervision frame sent\n");
+            printf("SET supervision frame sent\n");
             alarm(3);
             alarm_enabled = 1;
         }
@@ -51,10 +51,10 @@ int tx_stop_transmission(int fd) {
             alarm_enabled = 1;
         }
         if (!tx_state_machine(fd) && control_rcv == DISC_CONTROL) {
-            printf("Disconnection frame read\n");
+            printf("DISC supervision frame read\n");
 
             write(fd, ua_frame, SUP_FRAME_SIZE);
-            printf("Acknowledgement frame sent\n");
+            printf("UA supervision frame sent\n");
             return 0;
         }
     }
