@@ -1,2 +1,3 @@
-transmitter
-receiver
+bin/
+penguin-received.gif
+*.o
