@@ -41,6 +41,8 @@ int receive_file(int fd) {
         return 1;
     if (fwrite(data, sizeof(char), file_size, fptr) < file_size)
         return 1;
+    if (fclose(fptr))
+        return 1;
     return 0;
 }
 
