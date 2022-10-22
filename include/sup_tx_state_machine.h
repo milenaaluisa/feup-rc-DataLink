@@ -15,4 +15,4 @@ void tx_bcc_ok_transition_check(char byte_rcv);
 
 int tx_state_machine(int fd);
 
-#endif
+#endif // _SUP_TX_STATE_MACHINE_

@@ -15,4 +15,4 @@ void rx_bcc_ok_transition_check(char byte_rcv);
 
 int rx_state_machine(int fd);
 
-#endif
+#endif // _SUP_RX_STATE_MACHINE_
