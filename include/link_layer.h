@@ -7,11 +7,8 @@ typedef enum {
 } LinkLayerRole;
 
 typedef struct {
-    char serialPort[50];
+    char serial_port[50];
     LinkLayerRole role;
-    int baudRate;
-    int nRetransmissions;
-    int timeout;
 } LinkLayer;
 
 #define _POSIX_SOURCE 1 // POSIX compliant source

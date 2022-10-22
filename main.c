@@ -13,7 +13,7 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
-    const char *serialPort = argv[1];
+    const char *serial_port = argv[1];
     const char *role = argv[2];
     const char *filename = argv[3];
 
@@ -21,10 +21,10 @@ int main(int argc, char *argv[]) {
            "  - Serial port: %s\n"
            "  - Role: %s\n"
            "  - Filename: %s\n",
-           serialPort,
+           serial_port,
            role,
            filename);
 
-    applicationLayer(serialPort, role, filename);
+    applicationLayer(serial_port, role, filename);
     return 0;
 }
