@@ -10,6 +10,8 @@
 #include "sup_rx_state_machine.h"
 #include "info_state_machine.h"
 
+int ns;
+
 int rx_start_transmission(int fd) {
     rx_state_machine(fd);
     printf("SET supervision frame read\n");
@@ -17,6 +19,8 @@ int rx_start_transmission(int fd) {
     char* ua_frame = assemble_supervision_frame(UA_CONTROL);
     write(fd, ua_frame, SUP_FRAME_SIZE);
     printf("UA supervision frame sent\n");
+
+    ns = 0;
     return 0;
 }
 
@@ -33,7 +37,7 @@ int rx_stop_transmission(int fd) {
     return 0;
 }
 
-// TODO: Test
+/* TODO: Delete
 int receive_data(int fd, char* data, int num_packets) {
     int ns = 0;
     int num_successful_packets = 0;
@@ -61,6 +65,26 @@ int receive_data(int fd, char* data, int num_packets) {
         write(fd, acknowledgement, SUP_FRAME_SIZE);
     }
     return 0; 
+}*/
+
+// TODO: Test
+int receive_info_frame(int fd, char* packet) {
+    char* data_rcv = (char*) malloc(DATA_FIELD_BYTES);
+    char* acknowledgement = (char*) malloc(SUP_FRAME_SIZE);
+    char control_field;
+
+    int has_error = info_frame_state_machine(fd, ns, data_rcv);
+    if (!has_error)
+        ns = (ns == 0) ? 1 : 0;
+    if (!has_error || has_error == 2)
+       control_field = assemble_rr_frame_ctrl_field(ns);
+    else if (has_error == 3)
+        control_field = assemble_rej_frame_ctrl_field(ns);
+    if (has_error != 1)
+        acknowledgement = assemble_supervision_frame(control_field);
+
+    write(fd, acknowledgement, SUP_FRAME_SIZE);
+    return 0;
 }
 
 /*

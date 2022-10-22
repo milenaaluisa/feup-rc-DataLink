@@ -11,9 +11,9 @@ void info_a_rcv_transition_check(char byte_rcv, int ns);
 
 void info_c_rcv_transition_check(char byte_rcv);
 
-void info_bcc1_rcv_transition_check(char byte_rcv);
+void info_bcc1_rcv_transition_check(char byte_rcv, char* data_rcv);
 
-void info_data_rcv_transition_check(char byte_rcv);
+void info_data_rcv_transition_check(char byte_rcv, char* data_rcv);
 
 void info_bcc2_rcv_transition_check(char byte_rcv);
 

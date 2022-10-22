@@ -23,8 +23,7 @@ int llwrite(int fd, const char* buffer, int buffer_size) {
 }
 
 int llread(int fd, char* packet) {
-    // TODO
-    return 0;
+    return receive_info_frame(fd, packet);
 }
 
 int llclose(int fd, LinkLayer connection_parameters) {
