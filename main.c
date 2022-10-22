@@ -3,10 +3,6 @@
 
 #include "application_layer.h"
 
-#define BAUDRATE 9600
-#define N_TRIES 3
-#define TIMEOUT 4
-
 // Arguments:
 //   $1: /dev/ttySxx
 //   $2: tx | rx
@@ -24,17 +20,11 @@ int main(int argc, char *argv[]) {
     printf("Starting link-layer protocol application\n"
            "  - Serial port: %s\n"
            "  - Role: %s\n"
-           "  - Baudrate: %d\n"
-           "  - Number of tries: %d\n"
-           "  - Timeout: %d\n"
            "  - Filename: %s\n",
            serialPort,
            role,
-           BAUDRATE,
-           N_TRIES,
-           TIMEOUT,
            filename);
 
-    applicationLayer(serialPort, role, BAUDRATE, N_TRIES, TIMEOUT, filename);
+    applicationLayer(serialPort, role, filename);
     return 0;
 }

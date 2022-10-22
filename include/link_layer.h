@@ -16,6 +16,10 @@ typedef struct {
 
 #define _POSIX_SOURCE 1 // POSIX compliant source
 
+#define BAUDRATE 9600
+#define N_TRIES 3
+#define TIMEOUT 4
+
 // SIZE of maximum acceptable payload.
 // Maximum number of bytes that application layer should send to link layer
 #define MAX_PAYLOAD_SIZE 1000
