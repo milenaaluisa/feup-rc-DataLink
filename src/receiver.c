@@ -34,6 +34,7 @@ int rx_stop_transmission(int fd) {
 
     rx_state_machine(fd);
     printf("UA supervision frame read\n");
+    printf("Successfully disconnected\n");
     return 0;
 }
 

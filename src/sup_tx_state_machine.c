@@ -73,7 +73,5 @@ int tx_state_machine(int fd) {
             break;
         }
     }
-
-    printf("UA supervision frame received\n");
     return 0;
 }

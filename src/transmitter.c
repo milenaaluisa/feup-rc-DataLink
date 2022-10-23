@@ -8,8 +8,7 @@
 #include "utils.h"
 #include "sup_tx_state_machine.h"
 
-int alarm_enabled = 0;
-int alarm_count = 0;
+int alarm_enabled, alarm_count;
 extern char control_rcv;
 int ns, nr;
 
@@ -19,6 +18,8 @@ void alarm_handler(int signal) {
 }
 
 int tx_start_transmission(int fd) {
+    alarm_enabled = 0;
+    alarm_count = 0;
     (void) signal(SIGALRM, alarm_handler);
     printf("New alarm handler set\n");
 
@@ -33,6 +34,7 @@ int tx_start_transmission(int fd) {
         }
         if (!tx_state_machine(fd)) {
             ns = 0;
+            printf("UA supervision frame read\n");
             return 0;
         }
     }
@@ -41,6 +43,8 @@ int tx_start_transmission(int fd) {
 }
 
 int tx_stop_transmission(int fd) {
+    alarm_enabled = 0;
+    alarm_count = 0;
     (void) signal(SIGALRM, alarm_handler);
     printf("New alarm handler set\n");
 
@@ -52,6 +56,7 @@ int tx_stop_transmission(int fd) {
             write(fd, disc_frame, SUP_FRAME_SIZE);
             alarm(3);
             alarm_enabled = 1;
+            printf("DISC supervision frame sent\n");
         }
         if (!tx_state_machine(fd) && control_rcv == DISC_CONTROL) {
             printf("DISC supervision frame read\n");
