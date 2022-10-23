@@ -77,10 +77,14 @@ int receive_info_frame(int fd, char* packet) {
     int has_error = info_frame_state_machine(fd, ns, data_rcv);
     if (!has_error)
         ns = (ns == 0) ? 1 : 0;
-    if (!has_error || has_error == 2)
-       control_field = assemble_rr_frame_ctrl_field(ns);
-    else if (has_error == 3)
+    if (!has_error || has_error == 2) {
+        control_field = assemble_rr_frame_ctrl_field(ns);
+        printf("RR supervision frame sent\n");
+    }
+    else if (has_error == 3) {
         control_field = assemble_rej_frame_ctrl_field(ns);
+        printf("REJ supervision frame sent\n");
+    }
     if (has_error != 1)
         acknowledgement = assemble_supervision_frame(control_field);
 
