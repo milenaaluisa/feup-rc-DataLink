@@ -50,16 +50,6 @@ typedef struct {
 #define REJ_ACK 0x01
 #define INFO_FRAME_CONTROL 0x00 // TODO: check if needed
 
-//data packet indexes
-#define CTRL_FIELD_IDX 0
-#define SEQUENCE_NUM_IDX 1
-#define L1_IDX 2
-#define L2_IDX 3
-#define DATA_FIELD_START_IDX 4
-
-//data packet fields
-#define CTRL_FIELD 0x01
-
 // 6th bit of information frame's contol field will be set to 1 depending on Stop and Wait
 #define SET_INFO_FRAME_CONTROL BIT(6)
 // 7th bit of information frame's contol field will be set to 1 depending on Stop and Wait
@@ -68,21 +58,6 @@ typedef struct {
 // used for escaping occurences of flag inside information frame data field
 #define ESCAPE 0x7D
 #define STF_XOR 0x20
-
-//for control packet 
-#define PKT_CTRL_FIELD_IDX 0
-#define  TYPE_IDX     1
-#define  LENGTH_IDX   2
-#define  VALUE_IDX    3
-
-#define TYPE_FILE_SIZE   0
-#define TYPE_FILE_NAME   1
-#define CTRL_DATA     0x01
-#define CTRL_START    0x02
-#define CTRL_END      0x03
-#define DATA_CTRL_PACK_SIZE 256
-
-
 
 
 // Open a connection using the "port" parameters defined in struct linkLayer.

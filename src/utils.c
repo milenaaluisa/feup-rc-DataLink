@@ -4,6 +4,7 @@
 #include <string.h>
 
 #include "utils.h"
+#include "application_layer.h"
 #include "link_layer.h"
 
 int stuffing(char* data, char* stuffed_data, int data_size) {
@@ -35,7 +36,7 @@ char generate_bcc2(const char* data_rcv, int data_size) {
 }
 
 void assemble_data_packet(int sequence_number, char* data, int data_size, char* packet) {
-    packet[CONTROL_IDX] = CTRL_FIELD;
+    packet[CONTROL_IDX] = CTRL_DATA;
     packet[SEQUENCE_NUM_IDX] = sequence_number;
     packet[L1_IDX] = data_size / DATA_PACKET_MAX_SIZE;
     packet[L2_IDX] = data_size % DATA_PACKET_MAX_SIZE;
