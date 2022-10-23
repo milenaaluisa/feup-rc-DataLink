@@ -9,6 +9,8 @@
 #include "utils.h"
 #include "sup_rx_state_machine.h"
 #include "info_state_machine.h"
+#include "info_state_machine.c"
+
 
 int ns;
 
@@ -87,6 +89,36 @@ int receive_info_frame(int fd, char* packet) {
     write(fd, acknowledgement, SUP_FRAME_SIZE);
     return 0;
 }
+
+/*int receive_control_packet(int fd, unsigned char control_field, long* file_size, unsigned char* file_name) {
+    unsigned char *control_packet = malloc(DATA_CTRL_PACK_SIZE);
+    unsigned char type;
+    int size;
+    //int index = 1;
+    int length;
+
+    size = llread(fd, control_packet);
+
+    if (control_packet[0] != control_field){
+        perror("Wrong control byte\n");
+        exit(-1);
+    }
+
+    for(int i = 1; i < size){
+        type = control_packet[i++];
+        length = control_packet[i++];
+
+        if (type == TYPE_FILE_SIZE){
+            memcpy(file_size, control_packet + i, length);
+        }else if (type == TYPE_FILE_NAME){
+            *file_name = malloc(length);
+            memcpy(*file_name, control + i, length);
+        }
+        i += length;
+    }
+
+    return 0;
+}*/
 
 /*
 int main(int argc, char *argv[]) {

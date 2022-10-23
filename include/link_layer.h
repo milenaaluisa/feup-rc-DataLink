@@ -75,19 +75,12 @@ typedef struct {
 #define  LENGTH_IDX   2
 #define  VALUE_IDX    3
 
-#define TYPE_FILE_SIZE   0
-#define TYPE_FILE_NAME   1
-#define CTRL_DATA     0x01
-#define CTRL_START    0x02
-#define CTRL_END      0x03
+#define TYPE_FILE_SIZE  0x00
+#define TYPE_FILE_NAME  0x01
+#define CTRL_DATA       0x01
+#define CTRL_START      0x02
+#define CTRL_END        0x03
 #define DATA_CTRL_PACK_SIZE 256
-
-//for control packet state machine
-#define C_CTRL_FIELD  
-#define C_CTRL_TYPE
-#define C_CTRL_LENGTH
-#define C_CTRL_VALUE  
-
 
 
 // Open a connection using the "port" parameters defined in struct linkLayer.
