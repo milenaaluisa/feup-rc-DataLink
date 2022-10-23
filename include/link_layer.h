@@ -50,6 +50,13 @@ typedef struct {
 #define REJ_ACK 0x01
 #define INFO_FRAME_CONTROL 0x00 // TODO: check if needed
 
+//data packet indexes
+#define CTRL_FIELD_IDX 0
+#define SEQUENCE_NUM_IDX 1
+#define L1_IDX 2
+#define L2_IDX 3
+#define DATA_FIELD_START_IDX 4
+
 //data packet fields
 #define CTRL_FIELD 0x01
 
