@@ -83,6 +83,8 @@ typedef struct {
 #define DATA_CTRL_PACK_SIZE 256
 
 
+
+
 // Open a connection using the "port" parameters defined in struct linkLayer.
 // Return "1" on success or "-1" on error.
 int llopen(LinkLayer connectionParameters);
