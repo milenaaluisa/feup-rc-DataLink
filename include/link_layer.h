@@ -26,6 +26,8 @@ typedef struct {
 // size of information frame data field
 #define DATA_FIELD_BYTES 256
 #define INFO_FRAME_SIZE (DATA_FIELD_BYTES*2 + 6)
+#define PACKET_DATA_FIELD_SIZE 252
+#define DATA_PACKET_MAX_SIZE 256
 
 // frame fields indexes
 #define FLAG1_IDX 0
@@ -47,6 +49,9 @@ typedef struct {
 #define RR_ACK 0x05
 #define REJ_ACK 0x01
 #define INFO_FRAME_CONTROL 0x00 // TODO: check if needed
+
+//data packet fields
+#define CTRL_FIELD 0x01
 
 // 6th bit of information frame's contol field will be set to 1 depending on Stop and Wait
 #define SET_INFO_FRAME_CONTROL BIT(6)

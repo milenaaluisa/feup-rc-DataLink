@@ -122,3 +122,11 @@ int create_termios_structure(int fd, const char* serialPortName) {
     printf("New termios structure set\n");
     return 0;
 }
+
+void assemble_data_packet(int sequence_number, int data_size, char* data, char* packet, int packet_size) {
+    packet[0] = CTRL_FIELD;
+    packet[1] = sequence_number;
+    packet[2] = data_size / DATA_PACKET_MAX_SIZE;
+    packet[3] = data_size % DATA_PACKET_MAX_SIZE;
+    memcpy (packet + 4, data, packet_size);
+}

@@ -17,4 +17,6 @@ char assemble_rej_frame_ctrl_field(int ns);
 
 int create_termios_structure(int fd, const char* serialPortName);
 
+void assemble_data_packet(int sequence_number, int data_size, char* data, char* packet, int packet_size);
+
 #endif // _UTILS_H_
