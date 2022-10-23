@@ -1,7 +1,7 @@
 #include <unistd.h>
 #include <signal.h>
-#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "transmitter.h"
 #include "link_layer.h"
@@ -63,7 +63,30 @@ int tx_stop_transmission(int fd) {
 }
 
 // TODO: Test
-int send_data(int fd, char* data, int num_packets) {
+int send_data(int fd, FILE* file_ptr, int file_size) {
+    int sequence_number = 0;
+    int data_field_size, packet_size;
+    unsigned char* file = malloc(file_size * sizeof(unsigned char));
+
+    fread(file, sizeof(unsigned char), file_size, file_ptr);
+
+    for (long i = 0; i < file_size; i += PACKET_DATA_FIELD_SIZE) {
+        data_field_size = (i + PACKET_DATA_FIELD_SIZE > file_size)  ? file_size - i : PACKET_DATA_FIELD_SIZE;
+
+        char* data_field = malloc(data_field_size * sizeof(char));
+        memcpy(data_field, file + i, data_field_size);
+
+        packet_size = data_field_size + 4;
+        char* packet = malloc(packet_size * sizeof(char));
+
+        assemble_data_packet(sequence_number, data_field_size, data_field, packet, packet_size);
+
+        if (llwrite (fd, packet, packet_size) < 0)
+            return -1;
+
+        sequence_number = (sequence_number + 1) % DATA_PACKET_MAX_SIZE;
+    }
+    /*
     int ns = 0, nr;
     int num_successful_packets = 0;
     int reply_from_receiver;
@@ -103,7 +126,8 @@ int send_data(int fd, char* data, int num_packets) {
             printf("Transmission failed\n");
             return 1;
         }
-    }
+    }*/
+    fclose(file_ptr);
     return 0;
 }
 
