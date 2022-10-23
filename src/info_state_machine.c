@@ -3,12 +3,13 @@
 #include <string.h>
 
 #include "info_state_machine.h"
+#include "application_layer.h"
 #include "link_layer.h"
 #include "utils.h"
 
 enum InfoState info_state;
 char control_rcv;
-int has_error, data_size, is_escaped;
+int has_error, is_escaped, data_idx, data_size;
 
 void info_start_transition_check(char byte_rcv) {
     if (byte_rcv == FLAG)
@@ -47,25 +48,27 @@ void info_c_rcv_transition_check(char byte_rcv) {
 
 void info_bcc1_rcv_transition_check(char byte_rcv, char* data_rcv) {
     if (is_escaped) {
-        data_rcv[data_size] = byte_rcv ^ STF_XOR;
-        data_size++;
+        data_rcv[data_idx] = byte_rcv ^ STF_XOR;
+        data_idx++;
         is_escaped = 0;
     }
     else if (byte_rcv == ESCAPE)
         is_escaped = 1;
     else {
-        data_rcv[data_size] = byte_rcv;
-        data_size++;
+        data_rcv[data_idx] = byte_rcv;
+        data_idx++;
     }
 
-    if (data_size == DATA_FIELD_BYTES) { // TODO: check different sizes
+    if (data_idx == L1_IDX)
+        data_size = PACKET_DATA_FIELD_SIZE * data_rcv[L2_IDX] + data_rcv[L1_IDX] + 4;
+    if (data_idx == data_size) {
         info_state = DATA_RCV;
         return;
     }
 }
 
 void info_data_rcv_transition_check(char byte_rcv, char* data_rcv) {
-    if (byte_rcv == generate_bcc2(data_rcv, data_size))
+    if (byte_rcv == generate_bcc2(data_rcv, data_idx))
         info_state = BCC2_RCV;
     else {
         info_state = I_START;
@@ -88,7 +91,8 @@ int info_frame_state_machine(int fd, int ns, char* data_rcv) {
     info_state = I_START;
     has_error = 0;
     is_escaped = 0;
-    data_size = 0;
+    data_idx = 0;
+    data_size = DATA_FIELD_BYTES;
 
     char byte_rcv[BYTE_SIZE];
     while (info_state != I_STOP) {

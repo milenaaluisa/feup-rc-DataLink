@@ -36,11 +36,12 @@ char generate_bcc2(const char* data_rcv, int data_size) {
 }
 
 void assemble_data_packet(int sequence_number, char* data, int data_size, char* packet) {
-    packet[CONTROL_IDX] = CTRL_DATA;
+    packet[CTRL_FIELD_IDX] = CTRL_DATA;
     packet[SEQUENCE_NUM_IDX] = sequence_number;
-    packet[L1_IDX] = data_size / DATA_PACKET_MAX_SIZE;
-    packet[L2_IDX] = data_size % DATA_PACKET_MAX_SIZE;
-    memcpy (packet + DATA_FIELD_START_IDX, data, data_size + 4);
+    packet[L1_IDX] = data_size % PACKET_DATA_FIELD_SIZE;
+    packet[L2_IDX] = data_size / PACKET_DATA_FIELD_SIZE;
+
+    memcpy(packet + DATA_FIELD_START_IDX, data, data_size);
 }
 
 char* assemble_supervision_frame(char control_field) {

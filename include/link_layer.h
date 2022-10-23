@@ -26,8 +26,6 @@ typedef struct {
 // size of information frame data field
 #define DATA_FIELD_BYTES 256
 #define INFO_FRAME_SIZE (DATA_FIELD_BYTES*2 + 6)
-#define PACKET_DATA_FIELD_SIZE 252
-#define DATA_PACKET_MAX_SIZE 256
 
 // frame fields indexes
 #define FLAG1_IDX 0
