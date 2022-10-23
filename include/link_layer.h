@@ -1,5 +1,21 @@
-// Baudrate settings are defined in <asm/termbits.h>, which is included by <termios.h>
-#define BAUDRATE B38400
+#ifndef _LINK_LAYER_H_
+#define _LINK_LAYER_H_
+
+typedef enum {
+    LlTx,
+    LlRx,
+} LinkLayerRole;
+
+typedef struct {
+    char serial_port[50];
+    LinkLayerRole role;
+} LinkLayer;
+
+#define _POSIX_SOURCE 1 // POSIX compliant source
+
+#define BAUDRATE 9600
+#define N_TRIES 3
+#define TIMEOUT 4
 
 #define BIT(n) (0x1 << (n))
 
@@ -8,7 +24,7 @@
 // size of supervision frames
 #define SUP_FRAME_SIZE 5
 // size of information frame data field
-#define DATA_FIELD_BYTES 20
+#define DATA_FIELD_BYTES 256
 #define INFO_FRAME_SIZE (DATA_FIELD_BYTES*2 + 6)
 
 // frame fields indexes
@@ -40,3 +56,21 @@
 // used for escaping occurences of flag inside information frame data field
 #define ESCAPE 0x7D
 #define STF_XOR 0x20
+
+// Open a connection using the "port" parameters defined in struct linkLayer.
+// Return "1" on success or "-1" on error.
+int llopen(LinkLayer connectionParameters);
+
+// Send data in buf with size bufSize.
+// Return number of chars written, or "-1" on error.
+int llwrite(int fd, const char* buffer, int buffer_size);
+
+// Receive data in packet.
+// Return number of chars read, or "-1" on error.
+int llread(int fd, char* packet);
+
+// Close previously opened connection.
+// Return "1" on success or "-1" on error.
+int llclose(int fd, LinkLayer connection_parameters);
+
+#endif // _LINK_LAYER_H_

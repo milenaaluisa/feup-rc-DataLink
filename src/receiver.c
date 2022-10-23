@@ -1,37 +1,45 @@
 #include <fcntl.h>
+#include <unistd.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-#include "data-link.h"
+#include "receiver.h"
+#include "link_layer.h"
 #include "utils.h"
-#include "receiver-state-machine.h"
-#include "info-frame-state-machine.h"
+#include "sup_rx_state_machine.h"
+#include "info_state_machine.h"
 
-int start_transmission(int fd) {
-    state_machine(fd);
-    printf("Supervision frame read\n");
+int ns;
+
+int rx_start_transmission(int fd) {
+    rx_state_machine(fd);
+    printf("SET supervision frame read\n");
 
     char* ua_frame = assemble_supervision_frame(UA_CONTROL);
     write(fd, ua_frame, SUP_FRAME_SIZE);
-    printf("Acknowledgement frame sent\n");
+    printf("UA supervision frame sent\n");
+
+    ns = 0;
     return 0;
 }
 
-int stop_transmission(int fd) {
-    state_machine(fd);
-    printf("Disconnection frame read\n");
+int rx_stop_transmission(int fd) {
+    rx_state_machine(fd);
+    printf("DISC supervision frame read\n");
 
     char* disc_frame = assemble_supervision_frame(DISC_CONTROL);
-    char* ua_frame_rcv = malloc(SUP_FRAME_SIZE);
     write(fd, disc_frame, SUP_FRAME_SIZE);
-    printf("Disconnection frame sent\n");
+    printf("DISC supervision frame sent\n");
 
-    state_machine(fd);
-    printf("Acknowledgement frame read\n");
+    rx_state_machine(fd);
+    printf("UA supervision frame read\n");
     return 0;
 }
 
-// TODO: Test
+/* TODO: Delete
 int receive_data(int fd, char* data, int num_packets) {
-    int ns = 0, nr;
+    int ns = 0;
     int num_successful_packets = 0;
     char* data_rcv = (char*) malloc(DATA_FIELD_BYTES);
     char* acknowledgement = (char*) malloc(SUP_FRAME_SIZE);
@@ -54,10 +62,32 @@ int receive_data(int fd, char* data, int num_packets) {
             control_field = assemble_rej_frame_ctrl_field(ns);
             acknowledgement = assemble_supervision_frame(control_field);
         }
+        write(fd, acknowledgement, SUP_FRAME_SIZE);
     }
     return 0; 
+}*/
+
+// TODO: Test
+int receive_info_frame(int fd, char* packet) {
+    char* data_rcv = (char*) malloc(DATA_FIELD_BYTES);
+    char* acknowledgement = (char*) malloc(SUP_FRAME_SIZE);
+    char control_field;
+
+    int has_error = info_frame_state_machine(fd, ns, data_rcv);
+    if (!has_error)
+        ns = (ns == 0) ? 1 : 0;
+    if (!has_error || has_error == 2)
+       control_field = assemble_rr_frame_ctrl_field(ns);
+    else if (has_error == 3)
+        control_field = assemble_rej_frame_ctrl_field(ns);
+    if (has_error != 1)
+        acknowledgement = assemble_supervision_frame(control_field);
+
+    write(fd, acknowledgement, SUP_FRAME_SIZE);
+    return 0;
 }
 
+/*
 int main(int argc, char *argv[]) {
     const char *serialPortName = argv[1];
     if (argc < 2) {
@@ -77,9 +107,9 @@ int main(int argc, char *argv[]) {
     if (start_transmission(fd))
         return 1;
 
-    /* Draft testing receive_data
+    Draft testing receive_data
     char* data = (char*) malloc(DATA_FIELD_BYTES * 4);
-    receive_data(fd, data, 4); */
+    receive_data(fd, data, 4);
 
     if (stop_transmission(fd)){ 
             printf("Disconnection failed. \n");
@@ -87,4 +117,4 @@ int main(int argc, char *argv[]) {
     }
     
     return 0;
-}
+}*/

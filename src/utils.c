@@ -3,7 +3,8 @@
 #include <termios.h>
 #include <string.h>
 
-#include "data-link.h"
+#include "utils.h"
+#include "link_layer.h"
 
 int stuffing(char* data, char* stuffed_data) {
     int stuffed_data_size = 0;
@@ -26,7 +27,7 @@ int stuffing(char* data, char* stuffed_data) {
     return stuffed_data_size;
 }
 
-char generate_bcc2(const char* data_rcv){
+char generate_bcc2(const char* data_rcv) {
     char bcc2 = data_rcv[0];
     for (int i = 1; i < DATA_FIELD_BYTES; i++)
         bcc2 ^=  data_rcv[i];
@@ -87,7 +88,7 @@ char assemble_rej_frame_ctrl_field(int ns) {
 int create_termios_structure(int fd, const char* serialPortName) {
     if (fd < 0) {
         perror(serialPortName);
-        exit(-1);
+        return 1;
     }
 
     struct termios oldtio;
@@ -96,7 +97,7 @@ int create_termios_structure(int fd, const char* serialPortName) {
     // Save current port settings
     if (tcgetattr(fd, &oldtio) == -1) {
         perror("tcgetattr");
-        exit(-1);
+        return 1;
     }
 
     // Clear struct for new port settings
@@ -115,7 +116,7 @@ int create_termios_structure(int fd, const char* serialPortName) {
     // Set new port settings
     if (tcsetattr(fd, TCSANOW, &newtio) == -1) {
         perror("tcsetattr");
-        exit(-1);
+        return 1;
     }
 
     printf("New termios structure set\n");
