@@ -30,7 +30,7 @@ int stuffing(char* data, char* stuffed_data, int data_size) {
 char generate_bcc2(const char* data_rcv, int data_size) {
     char bcc2 = data_rcv[0];
     for (int i = 1; i < data_size; i++)
-        bcc2 ^=  data_rcv[i];
+        bcc2 ^= data_rcv[i];
     return bcc2;
 }
 

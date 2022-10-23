@@ -1,4 +1,5 @@
 #include <unistd.h>
+#include <stdio.h>
 #include <string.h>
 
 #include "info_state_machine.h"
@@ -45,11 +46,6 @@ void info_c_rcv_transition_check(char byte_rcv) {
 }
 
 void info_bcc1_rcv_transition_check(char byte_rcv, char* data_rcv) {
-    if (data_size == DATA_FIELD_BYTES || byte_rcv == FLAG) {
-        info_state = DATA_RCV;
-        return;
-    }
-
     if (is_escaped) {
         data_rcv[data_size] = byte_rcv ^ STF_XOR;
         data_size++;
@@ -60,6 +56,11 @@ void info_bcc1_rcv_transition_check(char byte_rcv, char* data_rcv) {
     else {
         data_rcv[data_size] = byte_rcv;
         data_size++;
+    }
+
+    if (data_size == DATA_FIELD_BYTES) { // TODO: check different sizes
+        info_state = DATA_RCV;
+        return;
     }
 }
 
@@ -114,5 +115,6 @@ int info_frame_state_machine(int fd, int ns, char* data_rcv) {
             break;
         }
     } 
+    printf("Information frame read (code %d)\n", has_error);
     return has_error;
 }
