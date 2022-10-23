@@ -11,8 +11,7 @@
 int alarm_enabled = 0;
 int alarm_count = 0;
 extern char control_rcv;
-int ns = 0;
-int nr;
+int ns, nr;
 
 void alarm_handler(int signal) {
     alarm_enabled = 0;
@@ -32,8 +31,10 @@ int tx_start_transmission(int fd) {
             alarm(3);
             alarm_enabled = 1;
         }
-        if (!tx_state_machine(fd)) 
+        if (!tx_state_machine(fd)) {
+            ns = 0;
             return 0;
+        }
     }
     printf("Transmission failed\n");
     return 1;
@@ -64,40 +65,8 @@ int tx_stop_transmission(int fd) {
     return 1;
 }
 
-// TODO: Test
-int send_data(int fd, FILE* file_ptr, int file_size) {
-    int sequence_number = 0;
-    int data_field_size, packet_size;
-    unsigned char* file = malloc(file_size * sizeof(unsigned char));
-
-    fread(file, sizeof(unsigned char), file_size, file_ptr);
-
-    for (long i = 0; i < file_size; i += PACKET_DATA_FIELD_SIZE) {
-        data_field_size = (i + PACKET_DATA_FIELD_SIZE > file_size)  ? file_size - i : PACKET_DATA_FIELD_SIZE;
-
-        char* data_field = malloc(data_field_size * sizeof(char));
-        memcpy(data_field, file + i, data_field_size);
-
-        packet_size = data_field_size + 4;
-        char* packet = malloc(packet_size * sizeof(char));
-
-        assemble_data_packet(sequence_number, data_field_size, data_field, packet, packet_size);
-
-        if (llwrite (fd, packet, packet_size) < 0)
-            return -1;
-
-        sequence_number = (sequence_number + 1) % DATA_PACKET_MAX_SIZE;
-    }
-    
-    fclose(file_ptr);
-    return 0;
-}
-
 int send_info_frame(int fd, char* buffer, int buffer_size) {
-    if (buffer_size > DATA_FIELD_BYTES)
-        return -1;
-
-    char control_field = assemble_info_frame_ctrl_field (ns);
+    char control_field = assemble_info_frame_ctrl_field(ns);
     int info_frame_size;
     char* info_frame = assemble_information_frame(control_field, buffer, buffer_size, &info_frame_size);
 
@@ -112,18 +81,14 @@ int send_info_frame(int fd, char* buffer, int buffer_size) {
 
         if (!tx_state_machine(fd)) { 
             nr = control_rcv & BIT(7);
-
-            if ((control_rcv & RR_ACK) == RR_ACK && nr != ns) {
+            if ((control_rcv & RR_ACK) == RR_ACK && nr != ns)
                 break;
-            }
-
             else if ((control_rcv & REJ_ACK) == REJ_ACK) {
                 alarm(3);
                 alarm_enabled = 0;
             }
         }
     }
-
     ns = (ns == 0) ? 1 : 0;
     return 0;
 }

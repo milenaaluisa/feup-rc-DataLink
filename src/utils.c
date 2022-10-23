@@ -34,6 +34,14 @@ char generate_bcc2(const char* data_rcv) {
     return bcc2;
 }
 
+void assemble_data_packet(int sequence_number, char* data, int data_size, char* packet) {
+    packet[CONTROL_IDX] = CTRL_FIELD;
+    packet[SEQUENCE_NUM_IDX] = sequence_number;
+    packet[L1_IDX] = data_size / DATA_PACKET_MAX_SIZE;
+    packet[L2_IDX] = data_size % DATA_PACKET_MAX_SIZE;
+    memcpy (packet + DATA_FIELD_START_IDX, data, data_size + 4);
+}
+
 char* assemble_supervision_frame(char control_field) {
     char* sup_frame = malloc(SUP_FRAME_SIZE);
     sup_frame[FLAG1_IDX] = FLAG;
@@ -125,12 +133,4 @@ int create_termios_structure(int fd, const char* serialPortName) {
 
     printf("New termios structure set\n");
     return 0;
-}
-
-void assemble_data_packet(int sequence_number, int data_size, char* data, char* packet, int packet_size) {
-    packet[CONTROL_IDX] = CTRL_FIELD;
-    packet[SEQUENCE_NUM_IDX] = sequence_number;
-    packet[L1_IDX] = data_size / DATA_PACKET_MAX_SIZE;
-    packet[L2_IDX] = data_size % DATA_PACKET_MAX_SIZE;
-    memcpy (packet + DATA_FIELD_START_IDX, data, packet_size);
 }

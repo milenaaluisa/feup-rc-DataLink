@@ -4,6 +4,28 @@
 
 #include "application_layer.h"
 #include "link_layer.h"
+#include "utils.h"
+
+// TODO: Test
+int send_data(int fd, char* data, int file_size) {
+    int sequence_number = 0;
+    int data_field_size, packet_size;
+    char data_field[DATA_FIELD_BYTES];
+    char packet[DATA_FIELD_BYTES + 4];
+
+    for (long i = 0; i < file_size; i += PACKET_DATA_FIELD_SIZE) {
+        data_field_size = (i + PACKET_DATA_FIELD_SIZE > file_size)  ? file_size - i : PACKET_DATA_FIELD_SIZE;
+        memcpy(data_field, data + i, data_field_size);
+
+        packet_size = data_field_size + 4;
+        assemble_data_packet(sequence_number, data_field, data_field_size, packet);
+        if (llwrite(fd, packet, packet_size))
+            return 1;
+
+        sequence_number = (sequence_number + 1) % DATA_PACKET_MAX_SIZE;
+    }
+    return 0;
+}
 
 int send_file(int fd, const char* filename) {
     FILE* fptr;
@@ -20,7 +42,8 @@ int send_file(int fd, const char* filename) {
 
     // TODO
     // send control packet
-    // send data
+    if (send_data(fd, data, file_size))
+        return 1;
     // send control packet
 
     if (fclose(fptr))

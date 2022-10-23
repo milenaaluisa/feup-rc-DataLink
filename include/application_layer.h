@@ -1,6 +1,8 @@
 #ifndef _APPLICATION_LAYER_H_
 #define _APPLICATION_LAYER_H_
 
+int send_data(int fd, char* data, int file_size);
+
 int send_file(int fd, const char* filename);
 
 int receive_file(int fd);

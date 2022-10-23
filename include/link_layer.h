@@ -75,7 +75,7 @@ int llopen(LinkLayer connectionParameters);
 
 // Send data in buf with size bufSize.
 // Return number of chars written, or "-1" on error.
-int llwrite(int fd, const char* buffer, int buffer_size);
+int llwrite(int fd, char* packet, int packet_size);
 
 // Receive data in packet.
 // Return number of chars read, or "-1" on error.

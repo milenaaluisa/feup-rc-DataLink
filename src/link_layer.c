@@ -17,9 +17,8 @@ int llopen(LinkLayer connection_parameters) {
     return fd;
 }
 
-int llwrite(int fd, const char* buffer, int buffer_size) {
-    // TODO
-    return 0;
+int llwrite(int fd, char* packet, int packet_size) {
+    return send_info_frame(fd, packet, packet_size);
 }
 
 int llread(int fd, char* packet) {
