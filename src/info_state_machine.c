@@ -7,7 +7,7 @@
 
 enum InfoState info_state;
 char control_rcv;
-int has_error, byte_seq, is_escaped;
+int has_error, data_size, is_escaped;
 
 void info_start_transition_check(char byte_rcv) {
     if (byte_rcv == FLAG)
@@ -45,26 +45,26 @@ void info_c_rcv_transition_check(char byte_rcv) {
 }
 
 void info_bcc1_rcv_transition_check(char byte_rcv, char* data_rcv) {
-    if (byte_seq == DATA_FIELD_BYTES || byte_rcv == FLAG) {
+    if (data_size == DATA_FIELD_BYTES || byte_rcv == FLAG) {
         info_state = DATA_RCV;
         return;
     }
 
     if (is_escaped) {
-        data_rcv[byte_seq] = byte_rcv ^ STF_XOR;
-        byte_seq++;
+        data_rcv[data_size] = byte_rcv ^ STF_XOR;
+        data_size++;
         is_escaped = 0;
     }
     else if (byte_rcv == ESCAPE)
         is_escaped = 1;
     else {
-        data_rcv[byte_seq] = byte_rcv;
-        byte_seq++;
+        data_rcv[data_size] = byte_rcv;
+        data_size++;
     }
 }
 
 void info_data_rcv_transition_check(char byte_rcv, char* data_rcv) {
-    if (byte_rcv == generate_bcc2(data_rcv))
+    if (byte_rcv == generate_bcc2(data_rcv, data_size))
         info_state = BCC2_RCV;
     else {
         info_state = I_START;
@@ -87,7 +87,7 @@ int info_frame_state_machine(int fd, int ns, char* data_rcv) {
     info_state = I_START;
     has_error = 0;
     is_escaped = 0;
-    byte_seq = 0;
+    data_size = 0;
 
     char byte_rcv[BYTE_SIZE];
     while (info_state != I_STOP) {

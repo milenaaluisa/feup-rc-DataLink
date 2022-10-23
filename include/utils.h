@@ -1,9 +1,9 @@
 #ifndef _UTILS_H_
 #define _UTILS_H_
 
-int stuffing(char* data, char* stuffed_data, int length);
+int stuffing(char* data, char* stuffed_data, int data_size);
 
-char generate_bcc2(const char* data_rcv);
+char generate_bcc2(const char* data_rcv, int data_size);
 
 void assemble_data_packet(int sequence_number, char* data, int data_size, char* packet);
 

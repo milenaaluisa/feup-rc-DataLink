@@ -6,11 +6,11 @@
 #include "utils.h"
 #include "link_layer.h"
 
-int stuffing(char* data, char* stuffed_data, int length) {
+int stuffing(char* data, char* stuffed_data, int data_size) {
     int stuffed_data_size = 0;
     char* stuffed_data_ptr = stuffed_data;
 
-    for (int i = 0; i < length; i++) {
+    for (int i = 0; i < data_size; i++) {
         if (*data == FLAG || *data == ESCAPE) {
             *stuffed_data_ptr = ESCAPE;
             stuffed_data_ptr++;
@@ -27,9 +27,9 @@ int stuffing(char* data, char* stuffed_data, int length) {
     return stuffed_data_size;
 }
 
-char generate_bcc2(const char* data_rcv) {
+char generate_bcc2(const char* data_rcv, int data_size) {
     char bcc2 = data_rcv[0];
-    for (int i = 1; i < DATA_FIELD_BYTES; i++)
+    for (int i = 1; i < data_size; i++)
         bcc2 ^=  data_rcv[i];
     return bcc2;
 }
@@ -69,7 +69,7 @@ char* assemble_information_frame(char control_field, char* buffer, int buffer_si
         stuffed_data++;
     }
 
-    info_frame[BCC2_IDX(stuffed_data_size)] = generate_bcc2(buffer);
+    info_frame[BCC2_IDX(stuffed_data_size)] = generate_bcc2(buffer, buffer_size);
     info_frame[I_FLAG2_IDX(stuffed_data_size)] = FLAG;
 
     *info_frame_size = frame_size;
