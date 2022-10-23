@@ -82,11 +82,6 @@ typedef struct {
 #define CTRL_END      0x03
 #define DATA_CTRL_PACK_SIZE 256
 
-//for control packet state machine
-#define C_CTRL_FIELD  
-#define C_CTRL_TYPE
-#define C_CTRL_LENGTH
-#define C_CTRL_VALUE  
 
 
 
