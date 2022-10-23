@@ -45,7 +45,7 @@ void info_c_rcv_transition_check(char byte_rcv) {
 }
 
 void info_bcc1_rcv_transition_check(char byte_rcv, char* data_rcv) {
-    if (byte_seq == DATA_FIELD_BYTES) {
+    if (byte_seq == DATA_FIELD_BYTES || byte_rcv == FLAG) {
         info_state = DATA_RCV;
         return;
     }
@@ -87,6 +87,7 @@ int info_frame_state_machine(int fd, int ns, char* data_rcv) {
     info_state = I_START;
     has_error = 0;
     is_escaped = 0;
+    byte_seq = 0;
 
     char byte_rcv[BYTE_SIZE];
     while (info_state != I_STOP) {
