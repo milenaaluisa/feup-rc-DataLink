@@ -69,6 +69,22 @@ typedef struct {
 #define ESCAPE 0x7D
 #define STF_XOR 0x20
 
+//for control packet 
+#define PKT_CTRL_FIELD_IDX 0
+#define  TYPE_IDX     1
+#define  LENGTH_IDX   2
+#define  VALUE_IDX    3
+
+#define TYPE_FILE_SIZE   0
+#define TYPE_FILE_NAME   1
+#define CTRL_DATA     0x01
+#define CTRL_START    0x02
+#define CTRL_END      0x03
+#define DATA_CTRL_PACK_SIZE 256
+
+
+
+
 // Open a connection using the "port" parameters defined in struct linkLayer.
 // Return "1" on success or "-1" on error.
 int llopen(LinkLayer connectionParameters);
@@ -84,5 +100,6 @@ int llread(int fd, char* packet);
 // Close previously opened connection.
 // Return "1" on success or "-1" on error.
 int llclose(int fd, LinkLayer connection_parameters);
+
 
 #endif // _LINK_LAYER_H_

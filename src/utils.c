@@ -134,3 +134,21 @@ int create_termios_structure(int fd, const char* serialPortName) {
     printf("New termios structure set\n");
     return 0;
 }
+
+int send_control_packet (int fd, unsigned ctrl_control_field, long file_size, const char* file_name){
+
+    unsigned char *control_packet = malloc (5 + sizeof(long) + strlen(file_name) + 1);
+
+    control_packet[PKT_CTRL_FIELD_IDX] = 
+    control_packet[TYPE_IDX] = TYPE_FILE_SIZE;
+    memcpy(control_packet + 3, &file_size, sizeof(long));
+    control_packet[VALUE_IDX] = (unsigned char) sizeof(long);
+
+    control_packet[sizeof(long) + 3] = TYPE_FILE_NAME;
+    control_packet[sizeof(long) + 4] = (unsigned char) strlen(file_name) + 1;
+    memcpy(control_packet + sizeof(long) + 5, file_name, strlen(file_name) + 1);
+
+    //llwrite(fd, control_packet, 5 + sizeof(long) + strlen(file_name) + 1);
+    return 0;    
+}
+
