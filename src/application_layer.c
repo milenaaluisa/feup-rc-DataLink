@@ -34,9 +34,20 @@ int receive_file(int fd) {
 
     // TODO
     // read control packet: will give us the file size and name
+    
     char* data = (char*) malloc(file_size);
-    // read data
-    // read control packet
+    /* Commented while llwrite not working
+    char* data_ptr = data;
+    char* packet = (char*) malloc(256); // TODO: change to macro
+    int packet_size;
+    memset(packet, 0, 256); // TODO: change to macro
+
+    while (packet[0] != 3) { // TODO: change to macro
+        llread(fd, packet);
+        packet_size = 256 * packet[2] + packet[3]; // TODO: change to macro
+        memcpy(data_ptr, packet + 4, packet_size);
+        data_ptr += packet_size;
+    }*/
     
     char* dest_filename = (char*) malloc(sizeof("received_") + sizeof(src_filename) - 1);
     strcpy(dest_filename, "received_");
