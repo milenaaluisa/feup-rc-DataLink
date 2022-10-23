@@ -11,6 +11,8 @@
 int alarm_enabled = 0;
 int alarm_count = 0;
 extern char control_rcv;
+int ns = 0;
+int nr;
 
 void alarm_handler(int signal) {
     alarm_enabled = 0;
@@ -86,48 +88,43 @@ int send_data(int fd, FILE* file_ptr, int file_size) {
 
         sequence_number = (sequence_number + 1) % DATA_PACKET_MAX_SIZE;
     }
-    /*
-    int ns = 0, nr;
-    int num_successful_packets = 0;
-    int reply_from_receiver;
+    
+    fclose(file_ptr);
+    return 0;
+}
+
+int send_info_frame(int fd, char* buffer, int buffer_size) {
+    if (buffer_size > DATA_FIELD_BYTES)
+        return -1;
+
     char control_field = assemble_info_frame_ctrl_field (ns);
-    char* info_frame = malloc(INFO_FRAME_SIZE);
-    int info_frame_size = assemble_information_frame(control_field, data, info_frame);
+    int info_frame_size;
+    char* info_frame = assemble_information_frame(control_field, buffer, buffer_size, &info_frame_size);
 
-    while (num_successful_packets < num_packets) {
-        (void) signal(SIGALRM, alarm_handler);
-        reply_from_receiver = 0;
+    (void) signal(SIGALRM, alarm_handler);
+    while (alarm_count < 3) { 
+        if (!alarm_enabled) {
+            write(fd, info_frame, info_frame_size);
+            printf("Information frame sent\n");
+            alarm(3);
+            alarm_enabled = 1;
+        }
 
-        while (alarm_count < 3) {
-            if (!alarm_enabled) {
-                write(fd, info_frame, info_frame_size);
-                printf("Information frame sent\n");
-                alarm(3);
-                alarm_enabled = 1;
-            }
+        if (!tx_state_machine(fd)) { 
+            nr = control_rcv & BIT(7);
 
-            if (!tx_state_machine(fd)) { 
-                nr = control_rcv & BIT(7);
-
-                if ((control_rcv & RR_ACK) == RR_ACK && nr != ns) {
-                    num_successful_packets++;
-                    data += DATA_FIELD_BYTES;
-                    ns = (ns == 0) ? 1 : 0;
-                    
-                    control_field = assemble_info_frame_ctrl_field(ns);
-                    info_frame_size = assemble_information_frame(control_field, data, info_frame);
-                }
-                reply_from_receiver = 1;
+            if ((control_rcv & RR_ACK) == RR_ACK && nr != ns) {
                 break;
             }
-        }
 
-        if (!reply_from_receiver) {
-            printf("Transmission failed\n");
-            return 1;
+            else if ((control_rcv & REJ_ACK) == REJ_ACK) {
+                alarm(3);
+                alarm_enabled = 0;
+            }
         }
-    }*/
-    fclose(file_ptr);
+    }
+
+    ns = (ns == 0) ? 1 : 0;
     return 0;
 }
 

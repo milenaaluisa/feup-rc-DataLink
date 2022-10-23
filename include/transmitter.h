@@ -10,4 +10,6 @@ int tx_stop_transmission(int fd);
 
 int send_data(int fd, FILE* file_ptr, int file_size);
 
+int send_info_frame(int fd, char* buffer, int buffer_size);
+
 #endif // _TRANSMITTER_H_
