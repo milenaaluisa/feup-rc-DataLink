@@ -139,7 +139,7 @@ int create_termios_structure(int fd, const char* serialPortName) {
 
 int send_control_packet (int fd, unsigned ctrl_control_field, long file_size, const char* file_name){
 
-    unsigned char *control_packet = malloc (5 + sizeof(long) + strlen(file_name) + 1);
+    char *control_packet = malloc (5 + sizeof(long) + strlen(file_name) + 1);
 
     control_packet[PKT_CTRL_FIELD_IDX] = 
     control_packet[TYPE_IDX] = TYPE_FILE_SIZE;
@@ -150,7 +150,7 @@ int send_control_packet (int fd, unsigned ctrl_control_field, long file_size, co
     control_packet[sizeof(long) + 4] = (unsigned char) strlen(file_name) + 1;
     memcpy(control_packet + sizeof(long) + 5, file_name, strlen(file_name) + 1);
 
-    //llwrite(fd, control_packet, 5 + sizeof(long) + strlen(file_name) + 1);
+    llwrite(fd, control_packet, 5 + sizeof(long) + strlen(file_name) + 1);
     return 0;    
 }
 

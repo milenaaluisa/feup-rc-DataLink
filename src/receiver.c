@@ -9,7 +9,6 @@
 #include "utils.h"
 #include "sup_rx_state_machine.h"
 #include "info_state_machine.h"
-#include "info_state_machine.c"
 
 
 int ns;

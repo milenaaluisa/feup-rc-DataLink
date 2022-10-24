@@ -41,10 +41,14 @@ int send_file(int fd, const char* filename) {
         return 1;
 
     // TODO
-    // send control packet
+    if (send_control_packet(fd, CTRL_START, file_size, filename)) 
+        return 1;
+
     if (send_data(fd, data, file_size))
         return 1;
-    // send control packet
+
+    if (send_control_packet(fd, CTRL_END, file_size, filename)) 
+        return 1;
 
     if (fclose(fptr))
         return 1;
