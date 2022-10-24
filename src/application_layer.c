@@ -43,10 +43,8 @@ int send_file(int fd, const char* filename) {
     
     if (send_control_packet(fd, CTRL_START, file_size, filename)) 
         return 1;
-
     if (send_data(fd, data, file_size))
         return 1;
-
     if (send_control_packet(fd, CTRL_END, file_size, filename)) 
         return 1;
 
@@ -59,7 +57,6 @@ int receive_file(int fd) {
     char src_filename; 
     long file_size;
 
-    
     if (receive_control_packet(fd, CTRL_START, &file_size, &src_filename))
         return 1;
     
