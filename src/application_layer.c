@@ -40,11 +40,13 @@ int send_file(int fd, const char* filename) {
     if (fread(data, sizeof(char), file_size, fptr) < file_size)
         return 1;
 
-    // TODO
-    // send control packet
+    
+    if (send_control_packet(fd, CTRL_START, file_size, filename)) 
+        return 1;
     if (send_data(fd, data, file_size))
         return 1;
-    // send control packet
+    if (send_control_packet(fd, CTRL_END, file_size, filename)) 
+        return 1;
 
     if (fclose(fptr))
         return 1;
@@ -52,28 +54,28 @@ int send_file(int fd, const char* filename) {
 }
 
 int receive_file(int fd) {
-    char src_filename[1] = "a"; // TODO: remove initialization
-    long file_size = 0; // TODO: remove initialization
+    char src_filename; 
+    long file_size;
 
-    // TODO
-    // read control packet: will give us the file size and name
+    if (receive_control_packet(fd, CTRL_START, &file_size, &src_filename))
+        return 1;
     
     char* data = (char*) malloc(file_size);
     char* data_ptr = data;
-    char* packet = (char*) malloc(256); // TODO: change to macro
+    char* packet = (char*) malloc(DATA_CTRL_PACK_SIZE); 
     int packet_size;
-    memset(packet, 0, 256); // TODO: change to macro
+    memset(packet, 0, DATA_CTRL_PACK_SIZE); 
 
-    while (packet[0] != 3) { // TODO: change to macro
+    while (packet[0] != CTRL_END) { 
         llread(fd, packet);
-        packet_size = 256 * packet[2] + packet[3]; // TODO: change to macro
+        packet_size = DATA_CTRL_PACK_SIZE * packet[2] + packet[3]; 
         memcpy(data_ptr, packet + 4, packet_size);
         data_ptr += packet_size;
     }
     
     char* dest_filename = (char*) malloc(sizeof("received_") + sizeof(src_filename) - 1);
     strcpy(dest_filename, "received_");
-    strcat(dest_filename, src_filename);
+    strcat(dest_filename, &src_filename);
 
     FILE* fptr;
     if (!(fptr = fopen(dest_filename, "w")))
