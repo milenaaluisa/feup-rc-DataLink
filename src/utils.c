@@ -4,6 +4,7 @@
 #include <string.h>
 
 #include "utils.h"
+#include "application_layer.h"
 #include "link_layer.h"
 
 int stuffing(char* data, char* stuffed_data, int data_size) {
@@ -30,16 +31,17 @@ int stuffing(char* data, char* stuffed_data, int data_size) {
 char generate_bcc2(const char* data_rcv, int data_size) {
     char bcc2 = data_rcv[0];
     for (int i = 1; i < data_size; i++)
-        bcc2 ^=  data_rcv[i];
+        bcc2 ^= data_rcv[i];
     return bcc2;
 }
 
 void assemble_data_packet(int sequence_number, char* data, int data_size, char* packet) {
-    packet[CONTROL_IDX] = CTRL_FIELD;
+    packet[CTRL_FIELD_IDX] = CTRL_DATA;
     packet[SEQUENCE_NUM_IDX] = sequence_number;
-    packet[L1_IDX] = data_size / DATA_PACKET_MAX_SIZE;
-    packet[L2_IDX] = data_size % DATA_PACKET_MAX_SIZE;
-    memcpy (packet + DATA_FIELD_START_IDX, data, data_size + 4);
+    packet[L1_IDX] = data_size % PACKET_DATA_FIELD_SIZE;
+    packet[L2_IDX] = data_size / PACKET_DATA_FIELD_SIZE;
+
+    memcpy(packet + DATA_FIELD_START_IDX, data, data_size);
 }
 
 char* assemble_supervision_frame(char control_field) {

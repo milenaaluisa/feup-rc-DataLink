@@ -21,8 +21,8 @@ void tx_flag_rcv_transition_check(char byte_rcv) {
 
 void tx_a_rcv_transition_check(char byte_rcv) {
     if (byte_rcv == UA_CONTROL || byte_rcv == DISC_CONTROL ||
-        (byte_rcv & RR_ACK) == RR_ACK || 
-        (byte_rcv & REJ_ACK) == REJ_ACK) {
+        byte_rcv == RR_ACK ||  byte_rcv == (char) (RR_ACK | SET_SUP_FRAME_CONTROL) ||
+        byte_rcv == REJ_ACK || byte_rcv == (char) (REJ_ACK | SET_SUP_FRAME_CONTROL)) {
         state = C_RCV;
         control_rcv = byte_rcv;
     }
