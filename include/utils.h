@@ -21,4 +21,6 @@ int create_termios_structure(int fd, const char* serialPortName);
 
 int send_control_packet (int fd, unsigned ctrl_control_field, long file_size, const char* file_name);
 
+int receive_control_packet(int fd, unsigned char control_field, long* file_size, char* file_name);
+
 #endif // _UTILS_H_
