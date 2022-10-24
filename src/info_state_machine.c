@@ -82,7 +82,7 @@ void info_bcc2_rcv_transition_check(char byte_rcv) {
     info_state = I_STOP;
 }
 
-int info_frame_state_machine(int fd, int ns, char* data_rcv) {
+int info_frame_state_machine(int fd, int ns, char* data_rcv, int* data_rcv_size) {
     memset(data_rcv, 0, DATA_FIELD_BYTES);
     // has_error = 1 indicates an error in the frame's header
     // has_error = 2 indicates that the frame being received is the worng one (duplicated)
@@ -117,6 +117,10 @@ int info_frame_state_machine(int fd, int ns, char* data_rcv) {
             break;
         }
     } 
+    // printf("----\n");
+    // for (int i = 0; i < data_size; i++)
+    //     printf("rcv: %08x\n", data_rcv[i]);
+    *data_rcv_size = data_size;
     printf("Information frame read (code %d)\n", has_error);
     return has_error;
 }

@@ -17,6 +17,6 @@ void info_data_rcv_transition_check(char byte_rcv, char* data_rcv);
 
 void info_bcc2_rcv_transition_check(char byte_rcv);
 
-int info_frame_state_machine(int fd, int ns, char* data_rcv);
+int info_frame_state_machine(int fd, int ns, char* data_rcv, int* data_rcv_size);
 
 #endif // _INFO_STATE_MACHINE_

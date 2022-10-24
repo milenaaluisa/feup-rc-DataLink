@@ -22,7 +22,10 @@ int llwrite(int fd, char* packet, int packet_size) {
 }
 
 int llread(int fd, char* packet) {
-    return receive_info_frame(fd, packet);
+    int packet_size = 0;
+    if (receive_info_frame(fd, packet, &packet_size))
+        return -1;
+    return packet_size;
 }
 
 int llclose(int fd, LinkLayer connection_parameters) {

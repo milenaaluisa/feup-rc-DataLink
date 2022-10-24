@@ -70,14 +70,18 @@ int receive_data(int fd, char* data, int num_packets) {
 }*/
 
 // TODO: Test
-int receive_info_frame(int fd, char* packet) {
+int receive_info_frame(int fd, char* packet, int* packet_size) {
     char* data_rcv = (char*) malloc(DATA_FIELD_BYTES);
     char* acknowledgement = (char*) malloc(SUP_FRAME_SIZE);
     char control_field;
+    int data_rcv_size;
 
-    int has_error = info_frame_state_machine(fd, ns, data_rcv);
-    if (!has_error)
+    int has_error = info_frame_state_machine(fd, ns, data_rcv, &data_rcv_size);
+    if (!has_error) {
         ns = (ns == 0) ? 1 : 0;
+        memcpy(packet, data_rcv, data_rcv_size);
+        *packet_size = data_rcv_size;
+    }
     if (!has_error || has_error == 2) {
         control_field = assemble_rr_frame_ctrl_field(ns);
         printf("RR supervision frame sent\n");
