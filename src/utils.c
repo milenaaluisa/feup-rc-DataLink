@@ -51,15 +51,16 @@ int send_control_packet(int fd, unsigned ctrl_control_field, long file_size, con
     return 0;    
 }
 
-int receive_control_packet(int fd, unsigned char control_field, long* file_size, char* file_name) {
+char* receive_control_packet(int fd, unsigned char control_field, long* file_size) {
     unsigned char type;
     char *control_packet = malloc(DATA_CTRL_PACK_SIZE);
     int size, length;
+    char* file_name;
     
     size = llread(fd, control_packet);
 
     if (control_packet[0] != control_field)
-        return 1;
+        return NULL;
 
     for (int i = 1; i < size; i += length) {
         type = control_packet[i++];
@@ -72,7 +73,7 @@ int receive_control_packet(int fd, unsigned char control_field, long* file_size,
             memcpy(file_name, control_packet + i, length);
         }  
     }
-    return 0;
+    return file_name;
 }
 
 void assemble_data_packet(int sequence_number, char* data, int data_size, char* packet) {

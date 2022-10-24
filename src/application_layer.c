@@ -53,13 +53,8 @@ int send_file(int fd, const char* filename) {
 }
 
 int receive_file(int fd) {
-    char* src_filename = NULL; 
     long file_size;
-
-    if (receive_control_packet(fd, CTRL_START, &file_size, src_filename))
-        return 1;
-    printf("%ld\n", file_size);
-    printf("%s\n", src_filename);
+    char* src_filename = receive_control_packet(fd, CTRL_START, &file_size);
     
     char* data = (char*) malloc(file_size);
     char* data_ptr = data;
