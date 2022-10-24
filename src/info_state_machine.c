@@ -9,7 +9,7 @@
 
 enum InfoState info_state;
 char control_rcv;
-int has_error, is_escaped, data_idx, data_size;
+int has_error, is_data_packet, is_escaped, data_idx, data_size, l2;
 
 void info_start_transition_check(char byte_rcv) {
     if (byte_rcv == FLAG)
@@ -39,6 +39,18 @@ void info_c_rcv_transition_check(char byte_rcv) {
 }
 
 void info_bcc1_rcv_transition_check(char byte_rcv, char* data_rcv) {
+    if (data_idx == CTRL_FIELD_IDX && byte_rcv != CTRL_DATA)
+        is_data_packet = 0;
+
+    if (is_data_packet && data_idx == L1_IDX)
+        data_size = PACKET_DATA_FIELD_SIZE * data_rcv[L2_IDX] + data_rcv[L1_IDX] + 4;
+    else if (!is_data_packet && data_idx == LENGTH1_IDX) {
+        data_size = byte_rcv + 5;
+        l2 = data_size - 1;
+    }
+    else if (!is_data_packet && data_idx == l2)
+        data_size += byte_rcv;
+
     if (is_escaped) {
         data_rcv[data_idx] = byte_rcv ^ STF_XOR;
         data_idx++;
@@ -51,8 +63,6 @@ void info_bcc1_rcv_transition_check(char byte_rcv, char* data_rcv) {
         data_idx++;
     }
 
-    if (data_idx == L1_IDX)
-        data_size = PACKET_DATA_FIELD_SIZE * data_rcv[L2_IDX] + data_rcv[L1_IDX] + 4;
     if (data_idx == data_size) {
         info_state = DATA_RCV;
         return;
@@ -79,6 +89,7 @@ int info_frame_state_machine(int fd, int ns, char* data_rcv) {
     // has_error = 3 indicates an error in the frame's data field
     info_state = I_START;
     has_error = 0;
+    is_data_packet = 1;
     is_escaped = 0;
     data_idx = 0;
     data_size = DATA_FIELD_BYTES;

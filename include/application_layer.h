@@ -13,9 +13,9 @@
 
 // control packet indexes 
 #define PKT_CTRL_FIELD_IDX 0
-#define TYPE_IDX 1
-#define LENGTH_IDX 2
-#define VALUE_IDX 3
+#define TYPE1_IDX 1
+#define LENGTH1_IDX 2
+#define VALUE1_IDX 3
 
 #define TYPE_FILE_SIZE 0
 #define TYPE_FILE_NAME 1

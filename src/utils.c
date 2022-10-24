@@ -35,13 +35,13 @@ char generate_bcc2(const char* data_rcv, int data_size) {
     return bcc2;
 }
 
-int send_control_packet (int fd, unsigned ctrl_control_field, long file_size, const char* file_name) {
+int send_control_packet(int fd, unsigned ctrl_control_field, long file_size, const char* file_name) {
     char *control_packet = malloc (5 + sizeof(long) + strlen(file_name) + 1);
 
     control_packet[PKT_CTRL_FIELD_IDX] = ctrl_control_field;
-    control_packet[TYPE_IDX] = TYPE_FILE_SIZE;
+    control_packet[TYPE1_IDX] = TYPE_FILE_SIZE;
     memcpy(control_packet + 3, &file_size, sizeof(long));
-    control_packet[LENGTH_IDX] = (unsigned char) sizeof(long);
+    control_packet[LENGTH1_IDX] = (unsigned char) sizeof(long);
 
     control_packet[sizeof(long) + 3] = TYPE_FILE_NAME;
     control_packet[sizeof(long) + 4] = (unsigned char) strlen(file_name) + 1;
@@ -52,26 +52,28 @@ int send_control_packet (int fd, unsigned ctrl_control_field, long file_size, co
 }
 
 int receive_control_packet(int fd, unsigned char control_field, long* file_size, char* file_name) {
-    unsigned char type;
+    // unsigned char type;
     char *control_packet = malloc(DATA_CTRL_PACK_SIZE);
-    int size, length;
-
-    size = llread(fd, control_packet);
+    // int length;
+    
+    printf("%d\n", llread(fd, control_packet));
+    for (int i = 0; i < 4; i++)
+        printf("packet char: %08x\n", control_packet[i]);
 
     if (control_packet[0] != control_field)
         return 1;
 
-    for (int i = 1; i < size; i += length) {
-        type = control_packet[i++];
-        length = control_packet[i++];
+    // for (int i = 1; i < size; i += length) {
+    //     type = control_packet[i++];
+    //     length = control_packet[i++];
 
-        if (type == TYPE_FILE_SIZE)
-            memcpy(file_size, control_packet + i, length);
-        else if (type == TYPE_FILE_NAME) {
-            file_name = malloc(length);
-            memcpy(file_name, control_packet + i, length);
-        }  
-    }
+    //     if (type == TYPE_FILE_SIZE)
+    //         memcpy(file_size, control_packet + i, length);
+    //     else if (type == TYPE_FILE_NAME) {
+    //         file_name = malloc(length);
+    //         memcpy(file_name, control_packet + i, length);
+    //     }  
+    // }
     return 0;
 }
 

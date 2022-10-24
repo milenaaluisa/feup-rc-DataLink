@@ -39,7 +39,6 @@ int send_file(int fd, const char* filename) {
     char* data = (char*) malloc(file_size);
     if (fread(data, sizeof(char), file_size, fptr) < file_size)
         return 1;
-
     
     if (send_control_packet(fd, CTRL_START, file_size, filename)) 
         return 1;
