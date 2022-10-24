@@ -79,7 +79,8 @@ int send_info_frame(int fd, char* buffer, int buffer_size) {
     alarm_count = 0;
     (void) signal(SIGALRM, alarm_handler);
     while (alarm_count < 3) { 
-        if (!alarm_enabled) {
+        if (!alarm_enabled || resend) {
+            resend = 0;
             write(fd, info_frame, info_frame_size);
             printf("Information frame sent\n");
             alarm(3);
@@ -90,12 +91,16 @@ int send_info_frame(int fd, char* buffer, int buffer_size) {
             nr = control_rcv & BIT(7);
             if ((control_rcv & RR_ACK) == RR_ACK && nr != ns)
                 break;
+            else if ((control_rcv & RR_ACK) == RR_ACK && nr == ns) {
+                resend = 1;
+            }
             else if ((control_rcv & REJ_ACK) == REJ_ACK) {
                 alarm(3);
                 alarm_enabled = 0;
             }
         }
     }
+
     ns = (ns == 0) ? 1 : 0;
     return 0;
 }
