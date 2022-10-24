@@ -43,10 +43,8 @@ int send_file(int fd, const char* filename) {
     
     if (send_control_packet(fd, CTRL_START, file_size, filename)) 
         return 1;
-
     if (send_data(fd, data, file_size))
         return 1;
-
     if (send_control_packet(fd, CTRL_END, file_size, filename)) 
         return 1;
 
@@ -56,12 +54,13 @@ int send_file(int fd, const char* filename) {
 }
 
 int receive_file(int fd) {
-    char src_filename; 
+    char* src_filename = NULL; 
     long file_size;
 
-    
-    if (receive_control_packet(fd, CTRL_START, &file_size, &src_filename))
+    if (receive_control_packet(fd, CTRL_START, &file_size, src_filename))
         return 1;
+    printf("%ld\n", file_size);
+    printf("%s\n", src_filename);
     
     char* data = (char*) malloc(file_size);
     char* data_ptr = data;
@@ -78,7 +77,7 @@ int receive_file(int fd) {
     
     char* dest_filename = (char*) malloc(sizeof("received_") + sizeof(src_filename) - 1);
     strcpy(dest_filename, "received_");
-    strcat(dest_filename, &src_filename);
+    strcat(dest_filename, src_filename);
 
     FILE* fptr;
     if (!(fptr = fopen(dest_filename, "w")))

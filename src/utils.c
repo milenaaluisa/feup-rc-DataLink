@@ -35,6 +35,46 @@ char generate_bcc2(const char* data_rcv, int data_size) {
     return bcc2;
 }
 
+int send_control_packet (int fd, unsigned ctrl_control_field, long file_size, const char* file_name) {
+    char *control_packet = malloc (5 + sizeof(long) + strlen(file_name) + 1);
+
+    control_packet[PKT_CTRL_FIELD_IDX] = ctrl_control_field;
+    control_packet[TYPE_IDX] = TYPE_FILE_SIZE;
+    memcpy(control_packet + 3, &file_size, sizeof(long));
+    control_packet[LENGTH_IDX] = (unsigned char) sizeof(long);
+
+    control_packet[sizeof(long) + 3] = TYPE_FILE_NAME;
+    control_packet[sizeof(long) + 4] = (unsigned char) strlen(file_name) + 1;
+    memcpy(control_packet + sizeof(long) + 5, file_name, strlen(file_name) + 1);
+
+    llwrite(fd, control_packet, 5 + sizeof(long) + strlen(file_name) + 1);
+    return 0;    
+}
+
+int receive_control_packet(int fd, unsigned char control_field, long* file_size, char* file_name) {
+    unsigned char type;
+    char *control_packet = malloc(DATA_CTRL_PACK_SIZE);
+    int size, length;
+
+    size = llread(fd, control_packet);
+
+    if (control_packet[0] != control_field)
+        return 1;
+
+    for (int i = 1; i < size; i += length) {
+        type = control_packet[i++];
+        length = control_packet[i++];
+
+        if (type == TYPE_FILE_SIZE)
+            memcpy(file_size, control_packet + i, length);
+        else if (type == TYPE_FILE_NAME) {
+            file_name = malloc(length);
+            memcpy(file_name, control_packet + i, length);
+        }  
+    }
+    return 0;
+}
+
 void assemble_data_packet(int sequence_number, char* data, int data_size, char* packet) {
     packet[CTRL_FIELD_IDX] = CTRL_DATA;
     packet[SEQUENCE_NUM_IDX] = sequence_number;
@@ -134,52 +174,5 @@ int create_termios_structure(int fd, const char* serialPortName) {
     }
 
     printf("New termios structure set\n");
-    return 0;
-}
-
-int send_control_packet (int fd, unsigned ctrl_control_field, long file_size, const char* file_name){
-
-    char *control_packet = malloc (5 + sizeof(long) + strlen(file_name) + 1);
-
-    control_packet[PKT_CTRL_FIELD_IDX] = ctrl_control_field;
-    control_packet[TYPE_IDX] = TYPE_FILE_SIZE;
-    memcpy(control_packet + 3, &file_size, sizeof(long));
-    control_packet[LENGTH_IDX] = (unsigned char) sizeof(long);
-
-    control_packet[sizeof(long) + 3] = TYPE_FILE_NAME;
-    control_packet[sizeof(long) + 4] = (unsigned char) strlen(file_name) + 1;
-    memcpy(control_packet + sizeof(long) + 5, file_name, strlen(file_name) + 1);
-
-    llwrite(fd, control_packet, 5 + sizeof(long) + strlen(file_name) + 1);
-    return 0;    
-}
-
-
-int receive_control_packet(int fd, unsigned char control_field, long* file_size, char* file_name) {
-    unsigned char type;
-    char *control_packet = malloc(DATA_CTRL_PACK_SIZE);
-    int size;
-    //int index = 1;
-    int length;
-
-    size = llread(fd, control_packet);
-
-    if (control_packet[0] != control_field){
-        perror("Wrong control byte\n");
-        exit(-1);
-    }
-
-    for(int i = 1; i < size; i += length){
-        type = control_packet[i++];
-        length = control_packet[i++];
-
-        if (type == TYPE_FILE_SIZE){
-            memcpy(file_size, control_packet + i, length);
-        }else if (type == TYPE_FILE_NAME){
-            file_name = malloc(length);
-            memcpy(file_name, control_packet + i, length);
-        }   
-    }
-
     return 0;
 }
