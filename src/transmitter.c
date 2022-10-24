@@ -75,6 +75,8 @@ int send_info_frame(int fd, char* buffer, int buffer_size) {
     int info_frame_size;
     char* info_frame = assemble_information_frame(control_field, buffer, buffer_size, &info_frame_size);
 
+    alarm_enabled = 0;
+    alarm_count = 0;
     (void) signal(SIGALRM, alarm_handler);
     while (alarm_count < 3) { 
         if (!alarm_enabled) {

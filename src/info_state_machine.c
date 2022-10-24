@@ -19,31 +19,23 @@ void info_start_transition_check(char byte_rcv) {
 void info_flag_rcv_transition_check(char byte_rcv) {
     if (byte_rcv == ADDRESS)
         info_state = I_A_RCV;
-    else {
-        info_state = I_START;
+    else
         has_error = 1;
-    }
 }
 
 void info_a_rcv_transition_check(char byte_rcv, int ns) {
     char expected_rcv = assemble_info_frame_ctrl_field(ns);
-    if (byte_rcv == expected_rcv) {
-        info_state = I_C_RCV;
+    if (byte_rcv == expected_rcv)
         control_rcv = byte_rcv;
-    }
-    else {
-        info_state = I_START;
+    else
         has_error = 2;
-    }
+    info_state = I_C_RCV;
 }
 
 void info_c_rcv_transition_check(char byte_rcv) {
-    if (byte_rcv == (ADDRESS ^ control_rcv))
-        info_state = BCC1_RCV;
-    else {
-        info_state = I_START;
-        has_error = (has_error == 2) ? 2 : 1;
-    }
+    if (byte_rcv != (ADDRESS ^ control_rcv))
+        has_error = 1;
+    info_state = BCC1_RCV;
 }
 
 void info_bcc1_rcv_transition_check(char byte_rcv, char* data_rcv) {
@@ -68,19 +60,16 @@ void info_bcc1_rcv_transition_check(char byte_rcv, char* data_rcv) {
 }
 
 void info_data_rcv_transition_check(char byte_rcv, char* data_rcv) {
-    if (byte_rcv == generate_bcc2(data_rcv, data_idx))
-        info_state = BCC2_RCV;
-    else {
-        info_state = I_START;
-        has_error = (has_error == 2) ? 2 : 3;
+    if (byte_rcv != generate_bcc2(data_rcv, data_idx)) {
+        has_error = (has_error == 1) ? 1 : 3;
     }
+    info_state = BCC2_RCV;
 }
 
 void info_bcc2_rcv_transition_check(char byte_rcv) {
-    if (byte_rcv == FLAG)
-        info_state = I_STOP;
-    else
+    if (byte_rcv != FLAG) 
         has_error = (has_error == 0) ? 1 : has_error;
+    info_state = I_STOP;
 }
 
 int info_frame_state_machine(int fd, int ns, char* data_rcv) {
@@ -97,8 +86,6 @@ int info_frame_state_machine(int fd, int ns, char* data_rcv) {
     char byte_rcv[BYTE_SIZE];
     while (info_state != I_STOP) {
         read(fd, byte_rcv, BYTE_SIZE);
-        if (has_error)
-            continue;
 
         switch (info_state) {
         case I_START: 
