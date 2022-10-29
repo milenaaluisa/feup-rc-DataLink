@@ -16,7 +16,7 @@ int rx_start_transmission(int fd) {
     rx_state_machine(fd);
     printf("SET supervision frame read\n");
 
-    char* ua_frame = assemble_supervision_frame(UA_CONTROL);
+    unsigned char* ua_frame = assemble_supervision_frame(UA_CONTROL);
     write(fd, ua_frame, SUP_FRAME_SIZE);
     printf("UA supervision frame sent\n");
 
@@ -28,7 +28,7 @@ int rx_stop_transmission(int fd) {
     rx_state_machine(fd);
     printf("DISC supervision frame read\n");
 
-    char* disc_frame = assemble_supervision_frame(DISC_CONTROL);
+    unsigned char* disc_frame = assemble_supervision_frame(DISC_CONTROL);
     write(fd, disc_frame, SUP_FRAME_SIZE);
     printf("DISC supervision frame sent\n");
 
@@ -39,10 +39,10 @@ int rx_stop_transmission(int fd) {
 }
 
 // TODO: Test
-int receive_info_frame(int fd, char* packet, int* packet_size) {
-    char* data_rcv = (char*) malloc(DATA_FIELD_BYTES);
-    char* acknowledgement = (char*) malloc(SUP_FRAME_SIZE);
-    char control_field;
+int receive_info_frame(int fd, unsigned char* packet, int* packet_size) {
+    unsigned char* data_rcv = (unsigned char*) malloc(DATA_FIELD_BYTES);
+    unsigned char* acknowledgement = (unsigned char*) malloc(SUP_FRAME_SIZE);
+    unsigned char control_field;
     int data_rcv_size;
 
     int has_error = info_frame_state_machine(fd, ns, data_rcv, &data_rcv_size);

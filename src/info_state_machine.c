@@ -8,23 +8,23 @@
 #include "utils.h"
 
 enum InfoState info_state;
-char control_rcv;
+unsigned char control_rcv;
 int has_error, is_data_packet, is_escaped, data_idx, data_size, l2;
 
-void info_start_transition_check(char byte_rcv) {
+void info_start_transition_check(unsigned char byte_rcv) {
     if (byte_rcv == FLAG)
         info_state = I_FLAG_RCV;
 }
 
-void info_flag_rcv_transition_check(char byte_rcv) {
+void info_flag_rcv_transition_check(unsigned char byte_rcv) {
     if (byte_rcv == ADDRESS)
         info_state = I_A_RCV;
     else
         has_error = 1;
 }
 
-void info_a_rcv_transition_check(char byte_rcv, int ns) {
-    char expected_rcv = assemble_info_frame_ctrl_field(ns);
+void info_a_rcv_transition_check(unsigned char byte_rcv, int ns) {
+    unsigned char expected_rcv = assemble_info_frame_ctrl_field(ns);
     if (byte_rcv == expected_rcv)
         control_rcv = byte_rcv;
     else
@@ -32,13 +32,13 @@ void info_a_rcv_transition_check(char byte_rcv, int ns) {
     info_state = I_C_RCV;
 }
 
-void info_c_rcv_transition_check(char byte_rcv) {
+void info_c_rcv_transition_check(unsigned char byte_rcv) {
     if (byte_rcv != (ADDRESS ^ control_rcv))
         has_error = 1;
     info_state = BCC1_RCV;
 }
 
-void info_bcc1_rcv_transition_check(char byte_rcv, char* data_rcv) {
+void info_bcc1_rcv_transition_check(unsigned char byte_rcv, unsigned char* data_rcv) {
     if (data_idx == CTRL_FIELD_IDX && byte_rcv != CTRL_DATA)
         is_data_packet = 0;
 
@@ -69,20 +69,20 @@ void info_bcc1_rcv_transition_check(char byte_rcv, char* data_rcv) {
     }
 }
 
-void info_data_rcv_transition_check(char byte_rcv, char* data_rcv) {
+void info_data_rcv_transition_check(unsigned char byte_rcv, unsigned char* data_rcv) {
     if (byte_rcv != generate_bcc2(data_rcv, data_idx)) {
         has_error = (has_error == 1) ? 1 : 3;
     }
     info_state = BCC2_RCV;
 }
 
-void info_bcc2_rcv_transition_check(char byte_rcv) {
+void info_bcc2_rcv_transition_check(unsigned char byte_rcv) {
     if (byte_rcv != FLAG) 
         has_error = (has_error == 0) ? 1 : has_error;
     info_state = I_STOP;
 }
 
-int info_frame_state_machine(int fd, int ns, char* data_rcv, int* data_rcv_size) {
+int info_frame_state_machine(int fd, int ns, unsigned char* data_rcv, int* data_rcv_size) {
     memset(data_rcv, 0, DATA_FIELD_BYTES);
     // has_error = 1 indicates an error in the frame's header
     // has_error = 2 indicates that the frame being received is the worng one (duplicated)
@@ -94,7 +94,7 @@ int info_frame_state_machine(int fd, int ns, char* data_rcv, int* data_rcv_size)
     data_idx = 0;
     data_size = DATA_FIELD_BYTES;
 
-    char byte_rcv[BYTE_SIZE];
+    unsigned char byte_rcv[BYTE_SIZE];
     while (info_state != I_STOP) {
         read(fd, byte_rcv, BYTE_SIZE);
 

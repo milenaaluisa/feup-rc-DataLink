@@ -9,7 +9,7 @@
 #include "sup_tx_state_machine.h"
 
 int alarm_enabled, alarm_count;
-extern char control_rcv;
+extern unsigned char control_rcv;
 int ns, nr;
 
 void alarm_handler(int signal) {
@@ -23,7 +23,7 @@ int tx_start_transmission(int fd) {
     (void) signal(SIGALRM, alarm_handler);
     printf("New alarm handler set\n");
 
-    char* set_frame = assemble_supervision_frame(SET_CONTROL);
+    unsigned char* set_frame = assemble_supervision_frame(SET_CONTROL);
 
     while (alarm_count < 3) {
         if (!alarm_enabled) {
@@ -48,8 +48,8 @@ int tx_stop_transmission(int fd) {
     (void) signal(SIGALRM, alarm_handler);
     printf("New alarm handler set\n");
 
-    char* disc_frame = assemble_supervision_frame(DISC_CONTROL);
-    char* ua_frame = assemble_supervision_frame(UA_CONTROL);
+    unsigned char* disc_frame = assemble_supervision_frame(DISC_CONTROL);
+    unsigned char* ua_frame = assemble_supervision_frame(UA_CONTROL);
 
     while (alarm_count < 3) {
         if (!alarm_enabled) {
@@ -70,10 +70,10 @@ int tx_stop_transmission(int fd) {
     return 1;
 }
 
-int send_info_frame(int fd, char* buffer, int buffer_size) {
-    char control_field = assemble_info_frame_ctrl_field(ns);
+int send_info_frame(int fd, unsigned char* buffer, int buffer_size) {
+    unsigned char control_field = assemble_info_frame_ctrl_field(ns);
     int info_frame_size;
-    char* info_frame = assemble_information_frame(control_field, buffer, buffer_size, &info_frame_size);
+    unsigned char* info_frame = assemble_information_frame(control_field, buffer, buffer_size, &info_frame_size);
 
     int resend = 0;
     alarm_enabled = 0;

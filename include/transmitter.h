@@ -8,6 +8,6 @@ int tx_start_transmission(int fd);
 
 int tx_stop_transmission(int fd);
 
-int send_info_frame(int fd, char* buffer, int buffer_size);
+int send_info_frame(int fd, unsigned char* buffer, int buffer_size);
 
 #endif // _TRANSMITTER_H_

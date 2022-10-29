@@ -5,24 +5,24 @@
 #include "link_layer.h"
 
 enum State state;
-char control_rcv;
+unsigned char control_rcv;
 
-void tx_start_transition_check(char byte_rcv) {
+void tx_start_transition_check(unsigned char byte_rcv) {
     if (byte_rcv == FLAG)
         state = FLAG_RCV;
 }
 
-void tx_flag_rcv_transition_check(char byte_rcv) {
+void tx_flag_rcv_transition_check(unsigned char byte_rcv) {
     if (byte_rcv == ADDRESS)
         state = A_RCV;
     else if (byte_rcv != FLAG)
         state = START;
 }
 
-void tx_a_rcv_transition_check(char byte_rcv) {
+void tx_a_rcv_transition_check(unsigned char byte_rcv) {
     if (byte_rcv == UA_CONTROL || byte_rcv == DISC_CONTROL ||
-        byte_rcv == RR_ACK ||  byte_rcv == (char) (RR_ACK | SET_SUP_FRAME_CONTROL) ||
-        byte_rcv == REJ_ACK || byte_rcv == (char) (REJ_ACK | SET_SUP_FRAME_CONTROL)) {
+        byte_rcv == RR_ACK ||  byte_rcv == (unsigned char) (RR_ACK | SET_SUP_FRAME_CONTROL) ||
+        byte_rcv == REJ_ACK || byte_rcv == (unsigned char) (REJ_ACK | SET_SUP_FRAME_CONTROL)) {
         state = C_RCV;
         control_rcv = byte_rcv;
     }
@@ -32,7 +32,7 @@ void tx_a_rcv_transition_check(char byte_rcv) {
         state = START;
 }
 
-void tx_c_rcv_transition_check(char byte_rcv) {
+void tx_c_rcv_transition_check(unsigned char byte_rcv) {
     if (byte_rcv == (ADDRESS ^ control_rcv))
         state = BCC_OK;
     else if (byte_rcv == FLAG)
@@ -41,7 +41,7 @@ void tx_c_rcv_transition_check(char byte_rcv) {
         state = START;
 }
 
-void tx_bcc_ok_transition_check(char byte_rcv) {
+void tx_bcc_ok_transition_check(unsigned char byte_rcv) {
     if (byte_rcv == FLAG)
         state = STOP;
     else
@@ -49,7 +49,7 @@ void tx_bcc_ok_transition_check(char byte_rcv) {
 }
 
 int tx_state_machine(int fd) {
-    char byte_rcv[BYTE_SIZE];
+    unsigned char byte_rcv[BYTE_SIZE];
     state = START;
     if (!read(fd, byte_rcv, BYTE_SIZE)) 
         return 1;

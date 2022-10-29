@@ -7,11 +7,11 @@
 #include "utils.h"
 
 // TODO: Test
-int send_data(int fd, char* data, int file_size) {
+int send_data(int fd, unsigned char* data, int file_size) {
     int sequence_number = 0;
     int data_field_size, packet_size;
-    char data_field[DATA_FIELD_BYTES];
-    char packet[DATA_FIELD_BYTES + 4];
+    unsigned char data_field[DATA_FIELD_BYTES];
+    unsigned char packet[DATA_FIELD_BYTES + 4];
 
     for (long i = 0; i < file_size; i += PACKET_DATA_FIELD_SIZE) {
         data_field_size = (i + PACKET_DATA_FIELD_SIZE > file_size)  ? file_size - i : PACKET_DATA_FIELD_SIZE;
@@ -36,15 +36,15 @@ int send_file(int fd, const char* filename) {
     long file_size = ftell(fptr);
     rewind(fptr);
 
-    char* data = (char*) malloc(file_size);
-    if (fread(data, sizeof(char), file_size, fptr) < file_size)
+    unsigned char* data = (unsigned char*) malloc(file_size);
+    if (fread(data, sizeof(unsigned char), file_size, fptr) < file_size)
         return 1;
     
-    if (send_control_packet(fd, CTRL_START, file_size, filename)) 
+    if (send_control_packet(fd, CTRL_START, file_size, (unsigned char*) filename)) 
         return 1;
     if (send_data(fd, data, file_size))
         return 1;
-    if (send_control_packet(fd, CTRL_END, file_size, filename)) 
+    if (send_control_packet(fd, CTRL_END, file_size, (unsigned char*) filename)) 
         return 1;
 
     if (fclose(fptr))
@@ -54,11 +54,11 @@ int send_file(int fd, const char* filename) {
 
 int receive_file(int fd) {
     long file_size;
-    char* src_filename = receive_control_packet(fd, CTRL_START, &file_size);
+    unsigned char* src_filename = receive_control_packet(fd, CTRL_START, &file_size);
     
-    char* data = (char*) malloc(file_size);
-    char* data_ptr = data;
-    char* packet = (char*) malloc(DATA_CTRL_PACK_SIZE); 
+    unsigned char* data = (unsigned char*) malloc(file_size);
+    unsigned char* data_ptr = data;
+    unsigned char* packet = (unsigned char*) malloc(DATA_CTRL_PACK_SIZE); 
     int packet_size;
     memset(packet, 0, DATA_CTRL_PACK_SIZE); 
 
@@ -71,12 +71,12 @@ int receive_file(int fd) {
     
     char* dest_filename = (char*) malloc(sizeof("received_") + sizeof(src_filename) - 1);
     strcpy(dest_filename, "received_");
-    strcat(dest_filename, src_filename);
+    strcat(dest_filename, (char*) src_filename);
 
     FILE* fptr;
     if (!(fptr = fopen(dest_filename, "w")))
         return 1;
-    if (fwrite(data, sizeof(char), file_size, fptr) < file_size)
+    if (fwrite(data, sizeof(unsigned char), file_size, fptr) < file_size)
         return 1;
     if (fclose(fptr))
         return 1;

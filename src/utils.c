@@ -7,9 +7,9 @@
 #include "application_layer.h"
 #include "link_layer.h"
 
-int stuffing(char* data, char* stuffed_data, int data_size) {
+int stuffing(unsigned char* data, unsigned char* stuffed_data, int data_size) {
     int stuffed_data_size = 0;
-    char* stuffed_data_ptr = stuffed_data;
+    unsigned char* stuffed_data_ptr = stuffed_data;
 
     for (int i = 0; i < data_size; i++) {
         if (*data == FLAG || *data == ESCAPE) {
@@ -28,15 +28,15 @@ int stuffing(char* data, char* stuffed_data, int data_size) {
     return stuffed_data_size;
 }
 
-char generate_bcc2(const char* data_rcv, int data_size) {
-    char bcc2 = data_rcv[0];
+unsigned char generate_bcc2(const unsigned char* data_rcv, int data_size) {
+    unsigned char bcc2 = data_rcv[0];
     for (int i = 1; i < data_size; i++)
         bcc2 ^= data_rcv[i];
     return bcc2;
 }
 
-int send_control_packet(int fd, unsigned ctrl_control_field, long file_size, const char* file_name) {
-    char *control_packet = malloc (5 + sizeof(long) + strlen(file_name) + 1);
+int send_control_packet(int fd, unsigned ctrl_control_field, long file_size, const unsigned char* file_name) {
+    unsigned char *control_packet = malloc (5 + sizeof(long) + strlen((char*) file_name) + 1);
 
     control_packet[PKT_CTRL_FIELD_IDX] = ctrl_control_field;
     control_packet[TYPE1_IDX] = TYPE_FILE_SIZE;
@@ -44,18 +44,18 @@ int send_control_packet(int fd, unsigned ctrl_control_field, long file_size, con
     control_packet[LENGTH1_IDX] = (unsigned char) sizeof(long);
 
     control_packet[sizeof(long) + 3] = TYPE_FILE_NAME;
-    control_packet[sizeof(long) + 4] = (unsigned char) strlen(file_name) + 1;
-    memcpy(control_packet + sizeof(long) + 5, file_name, strlen(file_name) + 1);
+    control_packet[sizeof(long) + 4] = (unsigned char) strlen((char*) file_name) + 1;
+    memcpy(control_packet + sizeof(long) + 5, file_name, strlen((char*) file_name) + 1);
 
-    llwrite(fd, control_packet, 5 + sizeof(long) + strlen(file_name) + 1);
+    llwrite(fd, control_packet, 5 + sizeof(long) + strlen((char*) file_name) + 1);
     return 0;    
 }
 
-char* receive_control_packet(int fd, unsigned char control_field, long* file_size) {
+unsigned char* receive_control_packet(int fd, unsigned char control_field, long* file_size) {
     unsigned char type;
-    char *control_packet = malloc(DATA_CTRL_PACK_SIZE);
+    unsigned char *control_packet = malloc(DATA_CTRL_PACK_SIZE);
     int size, length;
-    char* file_name;
+    unsigned char* file_name;
     
     size = llread(fd, control_packet);
 
@@ -76,7 +76,7 @@ char* receive_control_packet(int fd, unsigned char control_field, long* file_siz
     return file_name;
 }
 
-void assemble_data_packet(int sequence_number, char* data, int data_size, char* packet) {
+void assemble_data_packet(int sequence_number, unsigned char* data, int data_size, unsigned char* packet) {
     packet[CTRL_FIELD_IDX] = CTRL_DATA;
     packet[SEQUENCE_NUM_IDX] = sequence_number;
     packet[L1_IDX] = data_size % PACKET_DATA_FIELD_SIZE;
@@ -85,8 +85,8 @@ void assemble_data_packet(int sequence_number, char* data, int data_size, char* 
     memcpy(packet + DATA_FIELD_START_IDX, data, data_size);
 }
 
-char* assemble_supervision_frame(char control_field) {
-    char* sup_frame = malloc(SUP_FRAME_SIZE);
+unsigned char* assemble_supervision_frame(unsigned char control_field) {
+    unsigned char* sup_frame = malloc(SUP_FRAME_SIZE);
     sup_frame[FLAG1_IDX] = FLAG;
     sup_frame[ADDRESS_IDX] = ADDRESS;
     sup_frame[CONTROL_IDX] = control_field;
@@ -96,12 +96,12 @@ char* assemble_supervision_frame(char control_field) {
     return sup_frame;
 }
 
-char* assemble_information_frame(char control_field, char* buffer, int buffer_size, int* info_frame_size) {
-    char* stuffed_data = (char*) malloc(buffer_size * 2);
+unsigned char* assemble_information_frame(unsigned char control_field, unsigned char* buffer, int buffer_size, int* info_frame_size) {
+    unsigned char* stuffed_data = (unsigned char*) malloc(buffer_size * 2);
     int stuffed_data_size = stuffing(buffer, stuffed_data, buffer_size);
     int frame_size = stuffed_data_size + 6;
 
-    char* info_frame = malloc(frame_size);
+    unsigned char* info_frame = malloc(frame_size);
     info_frame[FLAG1_IDX] = FLAG;
     info_frame[ADDRESS_IDX] = ADDRESS;
     info_frame[CONTROL_IDX] = control_field;
@@ -119,22 +119,22 @@ char* assemble_information_frame(char control_field, char* buffer, int buffer_si
     return info_frame;
 }
 
-char assemble_info_frame_ctrl_field(int ns) {
-    char control_field = INFO_FRAME_CONTROL;
+unsigned char assemble_info_frame_ctrl_field(int ns) {
+    unsigned char control_field = INFO_FRAME_CONTROL;
     if (ns)
         control_field |= SET_INFO_FRAME_CONTROL;
     return control_field;
 }
 
-char assemble_rr_frame_ctrl_field(int ns) {
-    char control_field = RR_ACK;
+unsigned char assemble_rr_frame_ctrl_field(int ns) {
+    unsigned char control_field = RR_ACK;
     if (ns)
         control_field |= SET_SUP_FRAME_CONTROL;
     return control_field;
 }
 
-char assemble_rej_frame_ctrl_field(int ns) {
-    char control_field = REJ_ACK;
+unsigned char assemble_rej_frame_ctrl_field(int ns) {
+    unsigned char control_field = REJ_ACK;
     if (ns)
         control_field |= SET_SUP_FRAME_CONTROL;
     return control_field;

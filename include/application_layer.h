@@ -24,7 +24,7 @@
 #define CTRL_END 3
 #define DATA_CTRL_PACK_SIZE 256
 
-int send_data(int fd, char* data, int file_size);
+int send_data(int fd, unsigned char* data, int file_size);
 
 int send_file(int fd, const char* filename);
 

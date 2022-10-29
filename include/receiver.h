@@ -5,9 +5,6 @@ int rx_start_transmission(int fd);
 
 int rx_stop_transmission(int fd);
 
-int receive_info_frame(int fd, char* packet, int* packet_size);
-
-// TODO: Delete
-// int receive_data(int fd, char* data, int num_packets);
+int receive_info_frame(int fd, unsigned char* packet, int* packet_size);
 
 #endif // _RECEIVER_H_
