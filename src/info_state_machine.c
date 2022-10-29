@@ -42,7 +42,7 @@ void info_bcc1_rcv_transition_check(char byte_rcv, char* data_rcv) {
     if (data_idx == CTRL_FIELD_IDX && byte_rcv != CTRL_DATA)
         is_data_packet = 0;
 
-    if (is_data_packet && data_idx == L1_IDX)
+    if (is_data_packet && data_idx == (L1_IDX+1))
         data_size = PACKET_DATA_FIELD_SIZE * data_rcv[L2_IDX] + data_rcv[L1_IDX] + 4;
     else if (!is_data_packet && data_idx == LENGTH1_IDX) {
         data_size = byte_rcv + 5;
@@ -117,9 +117,7 @@ int info_frame_state_machine(int fd, int ns, char* data_rcv, int* data_rcv_size)
             break;
         }
     } 
-    // printf("----\n");
-    // for (int i = 0; i < data_size; i++)
-    //     printf("rcv: %08x\n", data_rcv[i]);
+
     *data_rcv_size = data_size;
     printf("Information frame read (code %d)\n", has_error);
     return has_error;
