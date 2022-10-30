@@ -62,12 +62,14 @@ int receive_file(int fd) {
     int packet_size;
     memset(packet, 0, DATA_CTRL_PACK_SIZE); 
 
+    llread(fd, packet);
     while (packet[0] != CTRL_END) { 
-        llread(fd, packet);
-        packet_size = DATA_CTRL_PACK_SIZE * packet[2] + packet[3]; 
+        packet_size = DATA_CTRL_PACK_SIZE * packet[2] + packet[3];
         memcpy(data_ptr, packet + 4, packet_size);
         data_ptr += packet_size;
+        llread(fd, packet);
     }
+    printf("File received\n");
     
     char* dest_filename = (char*) malloc(strlen("received_") + strlen((char*) src_filename) + 1);
     strcpy(dest_filename, "received_");
