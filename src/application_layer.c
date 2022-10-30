@@ -64,7 +64,7 @@ int receive_file(int fd) {
 
     llread(fd, packet);
     while (packet[0] != CTRL_END) { 
-        packet_size = DATA_CTRL_PACK_SIZE * packet[2] + packet[3];
+        packet_size = DATA_CTRL_PACK_SIZE * packet[2] + packet[3] - 4;
         memcpy(data_ptr, packet + 4, packet_size);
         data_ptr += packet_size;
         llread(fd, packet);
