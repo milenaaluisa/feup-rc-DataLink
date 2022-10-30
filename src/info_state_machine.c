@@ -95,7 +95,7 @@ int info_frame_state_machine(int fd, int ns, unsigned char* data_rcv, int* data_
     data_size = DATA_FIELD_BYTES;
 
     unsigned char byte_rcv[BYTE_SIZE];
-    while (info_state != I_STOP) {
+    while (info_state != I_STOP && has_error == 0) {
         read(fd, byte_rcv, BYTE_SIZE);
 
         switch (info_state) {

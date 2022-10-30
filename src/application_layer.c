@@ -69,7 +69,7 @@ int receive_file(int fd) {
         data_ptr += packet_size;
     }
     
-    char* dest_filename = (char*) malloc(sizeof("received_") + sizeof(src_filename) - 1);
+    char* dest_filename = (char*) malloc(strlen("received_") + strlen((char*) src_filename) + 1);
     strcpy(dest_filename, "received_");
     strcat(dest_filename, (char*) src_filename);
 
