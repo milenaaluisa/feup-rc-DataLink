@@ -25,6 +25,9 @@ int llread(int fd, unsigned char* packet) {
     int packet_size = 0;
     if (receive_info_frame(fd, packet, &packet_size))
         return -1;
+    // for (int i = 4; i < packet_size; i++)
+    //     printf("%c\n", packet[i]);
+    // printf("\n");
     return packet_size;
 }
 

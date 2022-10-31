@@ -6,7 +6,6 @@
 #include "link_layer.h"
 #include "utils.h"
 
-// TODO: Test
 int send_data(int fd, unsigned char* data, int file_size) {
     int sequence_number = 0;
     int data_field_size, packet_size;
@@ -62,12 +61,11 @@ int receive_file(int fd) {
     int packet_size;
     memset(packet, 0, DATA_CTRL_PACK_SIZE); 
 
-    llread(fd, packet);
+    packet_size = llread(fd, packet) - 4;
     while (packet[0] != CTRL_END) { 
-        packet_size = DATA_CTRL_PACK_SIZE * packet[2] + packet[3] - 4;
         memcpy(data_ptr, packet + 4, packet_size);
         data_ptr += packet_size;
-        llread(fd, packet);
+        packet_size = llread(fd, packet) - 4;
     }
     printf("File received\n");
     

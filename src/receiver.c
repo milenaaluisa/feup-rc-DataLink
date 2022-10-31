@@ -38,7 +38,6 @@ int rx_stop_transmission(int fd) {
     return 0;
 }
 
-// TODO: Test
 int receive_info_frame(int fd, unsigned char* packet, int* packet_size) {
     unsigned char* data_rcv = (unsigned char*) malloc(DATA_FIELD_BYTES);
     unsigned char* acknowledgement = (unsigned char*) malloc(SUP_FRAME_SIZE);
