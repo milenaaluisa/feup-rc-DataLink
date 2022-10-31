@@ -53,6 +53,8 @@ int tx_state_machine(int fd) {
     state = START;
     if (!read(fd, byte_rcv, BYTE_SIZE)) 
         return 1;
+    if (byte_rcv[0] != FLAG)
+        return 1;
 
     while (state != STOP) {
         if (state != START)

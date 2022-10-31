@@ -31,11 +31,11 @@ int tx_start_transmission(int fd) {
             printf("SET supervision frame sent\n");
             alarm(3);
             alarm_enabled = 1;
-        }
-        if (!tx_state_machine(fd)) {
-            ns = 0;
-            printf("UA supervision frame read\n");
-            return 0;
+            if (!tx_state_machine(fd)) {
+                ns = 0;
+                printf("UA supervision frame read\n");
+                return 0;
+            }   
         }
     }
     printf("Transmission failed\n");
